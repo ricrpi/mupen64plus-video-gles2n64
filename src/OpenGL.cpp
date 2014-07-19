@@ -197,6 +197,8 @@ void OGL_InitStates()
     //glDepthRangef(0.0f, (float)0x7FFF);  // what Yongzh used, broken on Adreno
     //glPolygonOffset(0.2f, 0.2f);
 /////
+	
+	glPolygonOffset(-3.0f, -3.0f);
     
 	DEBUG_PRINT("Video: OpenGL.cpp:%d glViewport(%d,%d,%d,%d)\n", __LINE__, config.framebuffer.xpos, config.framebuffer.ypos, config.framebuffer.width, config.framebuffer.height);
     glViewport(config.framebuffer.xpos, config.framebuffer.ypos, config.framebuffer.width, config.framebuffer.height);
