@@ -18,6 +18,7 @@
 extern ptr_ConfigGetSharedDataFilepath 	ConfigGetSharedDataFilepath;
 extern ptr_VidExt_GL_SwapBuffers       	CoreVideo_GL_SwapBuffers;
 extern ptr_VidExt_SetVideoMode		CoreVideo_SetVideoMode;
+extern ptr_VidExt_Init			CoreVideo_Init;
 extern ptr_VidExt_Quit                  CoreVideo_Quit;
 
 extern void (*CheckInterrupts)( void );

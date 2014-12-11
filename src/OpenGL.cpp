@@ -143,6 +143,9 @@ void OGL_InitStates()
    
     char m_strDeviceStats[200];
     m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
+
+    CoreVideo_Init();
+
     if (CoreVideo_SetVideoMode(config.window.width, config.window.height, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
 	{
 		printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);

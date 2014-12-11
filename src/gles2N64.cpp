@@ -28,6 +28,7 @@
 ptr_ConfigGetSharedDataFilepath ConfigGetSharedDataFilepath = NULL;
 ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers = NULL;
 ptr_VidExt_SetVideoMode          CoreVideo_SetVideoMode = NULL;
+ptr_VidExt_Init			 CoreVideo_Init = NULL;
 ptr_VidExt_Quit                  CoreVideo_Quit = NULL;
 
 static FrameSkipper frameSkipper;
@@ -42,9 +43,10 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle,
         void *Context, void (*DebugCallback)(void *, int, const char *))
 {
     ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath)	dlsym(CoreLibHandle, "ConfigGetSharedDataFilepath");
-	CoreVideo_GL_SwapBuffers 	= (ptr_VidExt_GL_SwapBuffers) 		dlsym(CoreLibHandle, "VidExt_GL_SwapBuffers");
-	CoreVideo_SetVideoMode 		= (ptr_VidExt_SetVideoMode)			dlsym(CoreLibHandle, "VidExt_SetVideoMode");
-	CoreVideo_Quit 				= (ptr_VidExt_Quit)					dlsym(CoreLibHandle, "VidExt_Quit");
+	CoreVideo_GL_SwapBuffers 	= (ptr_VidExt_GL_SwapBuffers) 	dlsym(CoreLibHandle, "VidExt_GL_SwapBuffers");
+	CoreVideo_SetVideoMode 		= (ptr_VidExt_SetVideoMode)	dlsym(CoreLibHandle, "VidExt_SetVideoMode");
+	CoreVideo_Init 				= (ptr_VidExt_Init)	dlsym(CoreLibHandle, "VidExt_Init");
+	CoreVideo_Quit 				= (ptr_VidExt_Quit)	dlsym(CoreLibHandle, "VidExt_Quit");
 
 #ifdef __NEON_OPT
     if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM &&
