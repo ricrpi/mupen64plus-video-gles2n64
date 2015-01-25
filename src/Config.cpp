@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "Config.h"
 #include "gles2N64.h"
@@ -266,9 +267,13 @@ void Config_LoadConfig()
     Config_SetDefault();
 
     // read configuration
-    const char *filename = ConfigGetSharedDataFilepath("gles2n64.conf");
+    //const char *filename = ConfigGetSharedDataFilepath("gles2n64.conf");
+    const char *userConfigPath = ConfigGetUserConfigPath();
+
+        char filename[PATH_MAX];
+	sprintf(filename, "%s/gles2n64.conf", userConfigPath);
 	
-	if (filename == NULL) filename = "gles2n64.conf";
+	//if (filename == NULL) filename = "gles2n64.conf";
 	
 	f = fopen(filename, "r");
 	if (!f)
