@@ -266,12 +266,18 @@ void Config_LoadConfig()
     // default configuration
     Config_SetDefault();
 
-    // read configuration
-    //const char *filename = ConfigGetSharedDataFilepath("gles2n64.conf");
-    const char *userConfigPath = ConfigGetUserConfigPath();
-
-        char filename[PATH_MAX];
+    // read configuration from shared data path
+    const char *sharedDataFilename = ConfigGetSharedDataFilepath("gles2n64.conf");
+    char filename[PATH_MAX]; // store the path to the config file to open
+    if (sharedDataFilename == NULL)
+    {
+	// file does not exist in shared data path, therefore set the filename
+	// to the user's config path, e.g. $HOME/.config/mupen64plus
+    	const char *userConfigPath = ConfigGetUserConfigPath();
 	sprintf(filename, "%s/gles2n64.conf", userConfigPath);
+    } else {
+	strcpy(filename, sharedDataFilename);	
+    }
 	
 	//if (filename == NULL) filename = "gles2n64.conf";
 	
