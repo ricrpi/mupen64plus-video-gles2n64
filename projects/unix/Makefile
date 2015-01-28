@@ -127,8 +127,8 @@ LDFLAGS += $(SHARED)
 
 
 ifeq ("$(MACHINE)","armv6l")
-CFLAGS += -DARM -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-CXXFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
+CFLAGS += -DARM -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux -DARM_ASM
+CXXFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux -DARM_ASM
 LDLIBS += -lm -L/opt/vc/lib -lGLESv2 -lEGL -lbcm_host
 endif
 
