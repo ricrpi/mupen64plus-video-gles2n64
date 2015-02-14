@@ -60,6 +60,7 @@ struct Config
 //// (part of the Galaxy S Zelda crash-fix
     int     tribufferOpt;
 //
+    int     multiSampling;
 
     int     hackBanjoTooie;
     int     hackZelda;

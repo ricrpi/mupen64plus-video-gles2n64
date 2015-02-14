@@ -108,13 +108,14 @@ Option configOptions[] =
     {"#Other Settings:", NULL, 0},
     {"update mode", &config.updateMode, SCREEN_UPDATE_AT_VI_UPDATE },
 	{"print FPS", &config.printFPS, 0},
-    {"ignore offscreen rendering", &config.ignoreOffscreenRendering, 1},
+    {"ignore offscreen rendering", &config.ignoreOffscreenRendering, 0},
     {"force screen clear", &config.forceBufferClear, 0},
     {"flip vertical", &config.screen.flipVertical, 0},
 // paulscode: removed from pre-compile to a config option
 //// (part of the Galaxy S Zelda crash-fix
     {"tribuffer opt", &config.tribufferOpt, 1},
 //
+    {"multisampling", &config.multiSampling, 0},
     {"", NULL, 0},
 
     {"#Hack Settings:", NULL, 0},
