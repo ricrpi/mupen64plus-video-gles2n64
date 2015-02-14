@@ -146,6 +146,26 @@ void OGL_InitStates()
 
     CoreVideo_Init();
 
+    /* hard-coded attribute values */
+    const int iDOUBLEBUFFER = 1;
+
+    /* set opengl attributes */
+    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
+    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, config.verticalSync);
+    
+    if (config.multiSampling > 0)
+    {
+        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
+        if (config.multiSampling <= 2)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
+        else if (config.multiSampling <= 4)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
+        else if (config.multiSampling <= 8)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
+        else
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
+    }
+
     if (CoreVideo_SetVideoMode(config.window.width, config.window.height, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
 	{
 		printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
