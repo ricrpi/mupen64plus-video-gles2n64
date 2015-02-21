@@ -18,9 +18,9 @@
 extern ptr_ConfigGetSharedDataFilepath 	ConfigGetSharedDataFilepath;
 extern ptr_ConfigGetUserConfigPath	    ConfigGetUserConfigPath;
 extern ptr_VidExt_GL_SwapBuffers       	CoreVideo_GL_SwapBuffers;
+extern ptr_VidExt_SetVideoMode		      CoreVideo_SetVideoMode;
 extern ptr_VidExt_GL_SetAttribute       CoreVideo_GL_SetAttribute;
 extern ptr_VidExt_GL_GetAttribute       CoreVideo_GL_GetAttribute;
-extern ptr_VidExt_SetVideoMode		      CoreVideo_SetVideoMode;
 extern ptr_VidExt_Init			            CoreVideo_Init;
 extern ptr_VidExt_Quit                  CoreVideo_Quit;
 

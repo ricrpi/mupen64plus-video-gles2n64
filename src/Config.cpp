@@ -67,8 +67,8 @@ Option configOptions[] =
     {"#Framebuffer Settings:",NULL,0},
 //    {"framebuffer enable", &config.framebuffer.enable, 0},
     {"framebuffer bilinear", &config.framebuffer.bilinear, 0},
-    {"framebuffer width", &config.framebuffer.width, 400},
-    {"framebuffer height", &config.framebuffer.height, 240},
+    {"framebuffer width", &config.framebuffer.width, 640},
+    {"framebuffer height", &config.framebuffer.height, 480},
 //    {"framebuffer width", &config.framebuffer.width, 800},
 //    {"framebuffer height", &config.framebuffer.height, 480},
     {"", NULL, 0},
@@ -96,6 +96,10 @@ Option configOptions[] =
     {"texture use IA", &config.texture.useIA, 0},
     {"texture fast CRC", &config.texture.fastCRC, 1},
     {"texture pow2", &config.texture.pow2, 1},
+    {"multisampling", &config.multiSampling, 0},
+#ifdef VC
+    {"auto resolution", &config.useScreenResolution, 1},
+#endif
     {"", NULL, 0},
 
     {"#Frame skip:", NULL, 0},
@@ -115,7 +119,6 @@ Option configOptions[] =
 //// (part of the Galaxy S Zelda crash-fix
     {"tribuffer opt", &config.tribufferOpt, 1},
 //
-    {"multisampling", &config.multiSampling, 0},
     {"", NULL, 0},
 
     {"#Hack Settings:", NULL, 0},
@@ -275,11 +278,10 @@ void Config_LoadConfig()
 	// file does not exist in shared data path, therefore set the filename
 	// to the user's config path, e.g. $HOME/.config/mupen64plus
     	const char *userConfigPath = ConfigGetUserConfigPath();
-	sprintf(filename, "%s/gles2n64.conf", userConfigPath);
+ 	sprintf(filename, "%s/gles2n64.conf", userConfigPath);
     } else {
 	strcpy(filename, sharedDataFilename);	
     }
-	
 	//if (filename == NULL) filename = "gles2n64.conf";
 	
 	f = fopen(filename, "r");

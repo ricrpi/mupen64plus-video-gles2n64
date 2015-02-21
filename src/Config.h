@@ -47,7 +47,10 @@ struct Config
     int     targetFPS;
     int     frameRenderRate;
     int     verticalSync;
-
+    int     multiSampling;
+#ifdef VC
+    int     useScreenResolution;
+#endif
     int     enableFog;
     int     enablePrimZ;
     int     enableLighting;
@@ -60,7 +63,6 @@ struct Config
 //// (part of the Galaxy S Zelda crash-fix
     int     tribufferOpt;
 //
-    int     multiSampling;
 
     int     hackBanjoTooie;
     int     hackZelda;

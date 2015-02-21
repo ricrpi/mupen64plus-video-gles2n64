@@ -31,6 +31,9 @@
 #include "ticks.h"
 #include "OGLDebug.h"
 #include "FrameSkipper.h"
+#ifdef VC
+#include <bcm_host.h>
+#endif
 
 //#define DEBUG_PRINT(...) printf(__VA_ARGS__)
 
@@ -65,6 +68,11 @@ int     TotalDrawCalls = 0;
 #define glDrawArrays(A,B,C) \
     TotalTriangles += C; TotalDrawCalls++; int t = ticksGetTicks(); glDrawArrays(A,B,C); OPENGL_CHECK_ERRORS; TotalDrawTime += (ticksGetTicks() - t);
 
+#endif
+
+#ifdef VC
+static unsigned g_fb_width;
+static unsigned g_fb_height;
 #endif
 
 GLInfo OGL;
@@ -145,7 +153,7 @@ void OGL_InitStates()
     m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
 
     CoreVideo_Init();
-
+    
     /* hard-coded attribute values */
     const int iDOUBLEBUFFER = 1;
 
@@ -165,6 +173,18 @@ void OGL_InitStates()
         else
             CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
     }
+
+#ifdef VC
+    if (graphics_get_display_size(0 /* LCD */, &g_fb_width, &g_fb_height) < 0)
+        printf("ERROR: Failed to get display size\n");
+    if (config.useScreenResolution == 1)
+    {
+	config.window.width = g_fb_width;
+	config.window.height = g_fb_height;
+	config.framebuffer.width = g_fb_width;
+	config.framebuffer.height = g_fb_height;
+    }		
+#endif
 
     if (CoreVideo_SetVideoMode(config.window.width, config.window.height, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
 	{
