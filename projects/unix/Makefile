@@ -112,8 +112,12 @@ ifneq ("$(filter arm%,$(HOST_CPU))","")
     ARCH_DETECTED := 32BITS
     PIC ?= 1
     ifeq ($(NEON), 1)
-    	CFLAGS += -DARM_ASM
-    	CFLAGS += -D__NEON_OPT
+      CFLAGS += -DARM_ASM
+      CFLAGS += -D__NEON_OPT
+      ifeq ("$(filter -mfpu=neon%,$(OPTFLAGS))","")
+    	CFLAGS += -mfpu=neon
+    	$(warning Use default -mfpu=neon.')
+      endif
     endif
     $(warning Architecture "$(HOST_CPU)" not officially supported.')
   endif
@@ -123,19 +127,39 @@ ifeq ("$(CPU)","NONE")
 endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
-OPTFLAGS ?= -flto
+OPTFLAGS ?= 
 WARNFLAGS ?= -Wall
-CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0
-CXXFLAGS += -fvisibility-inlines-hidden -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0
+CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -flto -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0     
+CXXFLAGS += -fvisibility-inlines-hidden -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0    
 LDFLAGS += $(SHARED)
 
-ifeq ($(VC), 1)
-  CFLAGS += -DARM -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-  CXXFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-  LDLIBS += -lm -L/opt/vc/lib -lGLESv2 -lEGL -lbcm_host
+ifeq ($(CRC_OPT), 1)
+CFLAGS += -D__CRC_OPT
+CXXFLAGS += -D__CRC_OPT
 endif
 
-LDLIBS += -lGLESv2
+ifeq ($(HASHMAP_OPT), 1)
+CFLAGS += -D__HASHMAP_OPT
+CXXFLAGS += -D__HASHMAP_OPT
+endif
+
+ifeq ($(TRIBUFFER_OPT), 1)
+CFLAGS += -D__TRIBUFFER_OPT
+CXXFLAGS += -D__TRIBUFFER_OPT
+endif
+
+ifeq ($(VEC4_OPT), 1)
+CFLAGS += -D__VEC4_OPT
+CXXFLAGS += -D__VEC4_OPT
+endif
+
+ifeq ($(VC), 1)
+CFLAGS += -DARM -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
+CXXFLAGS += -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
+LDLIBS += -lm -L/opt/vc/lib -lEGL -lbcm_host
+endif
+
+LDLIBS += -lGLESv2 
 
 ifeq ($(CPU), X86)
   CFLAGS += -msse
@@ -151,26 +175,6 @@ endif
 
 ifeq ($(BIG_ENDIAN), 1)
   CFLAGS += -DM64P_BIG_ENDIAN
-endif
-
-ifeq ($(CRC_OPT), 1)
-  CFLAGS += -D__CRC_OPT
-  CXXFLAGS += -D__CRC_OPT
-endif
-
-ifeq ($(HASHMAP_OPT), 1)
-  CFLAGS += -D__HASHMAP_OPT
-  CXXFLAGS += -D__HASHMAP_OPT
-endif
-
-ifeq ($(TRIBUFFER_OPT), 1)
-  CFLAGS += -D__TRIBUFFER_OPT
-  CXXFLAGS += -D__TRIBUFFER_OPT
-endif
-
-ifeq ($(VEC4_OPT), 1)
-  CFLAGS += -D__VEC4_OPT
-  CXXFLAGS += -D__VEC4_OPT
 endif
 
 # tweak flags for 32-bit build on 64-bit system
@@ -370,12 +374,14 @@ $(SRCDIR)/S2DEX2.cpp \
 $(SRCDIR)/S2DEX.cpp \
 $(SRCDIR)/ShaderCombiner.cpp \
 $(SRCDIR)/Textures.cpp \
-$(SRCDIR)/VI.cpp 
-
+$(SRCDIR)/VI.cpp
 ifeq ($(NEON), 1)    
   SOURCE += $(SRCDIR)/gSPNeon.cpp
   SOURCE += $(SRCDIR)/3DMathNeon.cpp
 endif
+
+#$(SRCDIR)/3DMathNeon.cpp \
+#$(SRCDIR)/gSPNeon.cpp 
 
 # generate a list of object files build, make a temporary directory for them
 OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(filter %.c, $(SOURCE)))
@@ -403,6 +409,7 @@ targets:
 	@echo "    VC=1 	 == build against Broadcom Videocore GLESv2"
 	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"
 	@echo "    PIC=(1|0)     == Force enable/disable of position independent code"
+	@echo "    POSTFIX=name  == String added to the name of the the build (default: '')"
 	@echo "    HASHMAP_OPT=1 == Hashmap optimization"
 	@echo "    VEC4_OPT=1 	 == VEC4 optimization"
 	@echo "    TRIBUFFER_OPT=1 == Tribuffer optimization"
@@ -423,9 +430,13 @@ install: $(TARGET)
 	$(INSTALL) -d "$(DESTDIR)$(PLUGINDIR)"
 	$(INSTALL) -m 0644 $(INSTALL_STRIP_FLAG) $(TARGET) "$(DESTDIR)$(PLUGINDIR)"
 	$(INSTALL) -d "$(DESTDIR)$(SHAREDIR)"
+	$(INSTALL) -m 0644 "../../data/gles2n64.conf" "$(DESTDIR)$(SHAREDIR)"
+	$(INSTALL) -m 0644 "../../data/gles2n64rom.conf" "$(DESTDIR)$(SHAREDIR)"
 
 uninstall:
 	$(RM) "$(DESTDIR)$(PLUGINDIR)/$(TARGET)"
+	$(RM) "$(DESTDIR)$(SHAREDIR)/gles2n64.conf"
+	$(RM) "$(DESTDIR)$(SHAREDIR)/gles2n64rom.conf"
 
 clean:
 	$(RM) -r $(OBJDIR) $(TARGET)
