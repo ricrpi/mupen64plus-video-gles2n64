@@ -1461,7 +1461,7 @@ void OGL_ClearDepthBuffer()
     glClearColor( 0, 0, 0, 1 );
 	OPENGL_CHECK_ERRORS;
 
-    glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
+    glClear( GL_DEPTH_BUFFER_BIT );
 	OPENGL_CHECK_ERRORS;
 
     OGL_UpdateDepthUpdate();
