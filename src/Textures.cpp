@@ -942,15 +942,15 @@ u32 TextureCache_CalculateCRC( u32 t, u32 width, u32 height )
     for (y = 0; y < height; y += n)
     {
         src = (void*) &TMEM[(gSP.textureTile[t]->tmem + (y * line)) & 511];
-        crc = CRC_Calculate( crc, src, bpl );
+        crc = Hash_Calculate( crc, src, bpl );
     }
 
     if (gSP.textureTile[t]->format == G_IM_FMT_CI)
     {
         if (gSP.textureTile[t]->size == G_IM_SIZ_4b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC16[gSP.textureTile[t]->palette], 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC16[gSP.textureTile[t]->palette], 4 );
         else if (gSP.textureTile[t]->size == G_IM_SIZ_8b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC256, 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC256, 4 );
     }
     return crc;
 }
@@ -1037,14 +1037,14 @@ void TextureCache_UpdateBackground()
     u32 numBytes = gSP.bgImage.width * gSP.bgImage.height << gSP.bgImage.size >> 1;
     u32 crc;
 
-    crc = CRC_Calculate( 0xFFFFFFFF, &RDRAM[gSP.bgImage.address], numBytes );
-
+    crc = Hash_Calculate( 0xFFFFFFFF, &RDRAM[gSP.bgImage.address], numBytes );
+    
     if (gSP.bgImage.format == G_IM_FMT_CI)
     {
         if (gSP.bgImage.size == G_IM_SIZ_4b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC16[gSP.bgImage.palette], 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC16[gSP.bgImage.palette], 4 );
         else if (gSP.bgImage.size == G_IM_SIZ_8b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC256, 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC256, 4 );
     }
 
     //before we traverse cache, check to see if texture is already bound:
