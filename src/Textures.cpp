@@ -6,6 +6,16 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
+#ifdef __GNUC__
+#	define likely(x)       __builtin_expect((x),1)
+#	define unlikely(x)     __builtin_expect((x),0)
+#	define prefetch(x, y)  __builtin_prefetch((x),(y))
+#else
+#	define likely(x)       (x)
+#	define unlikely(x)     (x)
+#   define prefetch(x, y)
+#endif
+
 #include "Common.h"
 #include "Config.h"
 #include "OpenGL.h"
@@ -18,8 +28,6 @@
 #include "CRC.h"
 #include "convert.h"
 #include "2xSAI.h"
-#include "OGLDebug.h"
-
 //#include "FrameBuffer.h"
 
 #define FORMAT_NONE     0
@@ -380,20 +388,14 @@ void TextureCache_Init()
     else textureFormat = textureFormatRGBA;
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	OPENGL_CHECK_ERRORS;
-
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	OPENGL_CHECK_ERRORS;
-
     glGenTextures( 32, cache.glNoiseNames );
-	OPENGL_CHECK_ERRORS;
 
     srand(time(NULL));
     u8 noise[64*64*2];
     for (u32 i = 0; i < 32; i++)
     {
         glBindTexture( GL_TEXTURE_2D, cache.glNoiseNames[i] );
-		OPENGL_CHECK_ERRORS;
         for (u32 y = 0; y < 64; y++)
         {
             for (u32 x = 0; x < 64; x++)
@@ -404,7 +406,6 @@ void TextureCache_Init()
             }
         }
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 64, 64, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, noise);
-		OPENGL_CHECK_ERRORS;
     }
 
     cache.dummy = TextureCache_AddTop();
@@ -430,10 +431,7 @@ void TextureCache_Init()
     cache.dummy->tMem = 0;
 
     glBindTexture( GL_TEXTURE_2D, cache.dummy->glName );
-	OPENGL_CHECK_ERRORS;
-
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummyTexture);
-	OPENGL_CHECK_ERRORS;
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummyTexture);
 
     cache.cachedBytes = cache.dummy->textureBytes;
     TextureCache_ActivateDummy(0);
@@ -478,8 +476,6 @@ void TextureCache_RemoveBottom()
 #endif
 
     glDeleteTextures( 1, &cache.bottom->glName );
-	OPENGL_CHECK_ERRORS;
-
     cache.cachedBytes -= cache.bottom->textureBytes;
 
     if (cache.bottom == cache.top)
@@ -529,8 +525,6 @@ void TextureCache_Remove( CachedTexture *texture )
 #endif
 
     glDeleteTextures( 1, &texture->glName );
-	OPENGL_CHECK_ERRORS;
-
     cache.cachedBytes -= texture->textureBytes;
     free( texture );
 
@@ -550,7 +544,6 @@ CachedTexture *TextureCache_AddTop()
     CachedTexture *newtop = (CachedTexture*)malloc( sizeof( CachedTexture ) );
 
     glGenTextures( 1, &newtop->glName );
-	OPENGL_CHECK_ERRORS;
 
     newtop->lower = cache.top;
     newtop->higher = NULL;
@@ -595,10 +588,7 @@ void TextureCache_Destroy()
         TextureCache_RemoveBottom();
 
     glDeleteTextures( 32, cache.glNoiseNames );
-	OPENGL_CHECK_ERRORS;
-
     glDeleteTextures( 1, &cache.dummy->glName  );
-	OPENGL_CHECK_ERRORS;
 
 #ifdef __HASHMAP_OPT
     cache.hash.destroy();
@@ -706,7 +696,6 @@ void TextureCache_LoadBackground( CachedTexture *texInfo )
     if (!config.texture.sai2x || (texFormat.format == FORMAT_I8 || texFormat.format == FORMAT_IA88))
     {
         glTexImage2D( GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight, 0, glFormat, glType, dest);
-		OPENGL_CHECK_ERRORS;
     }
     else
     {
@@ -723,7 +712,6 @@ void TextureCache_LoadBackground( CachedTexture *texInfo )
             _2xSaI5551( (u16*)dest, (u16*)scaledDest, texInfo->realWidth, texInfo->realHeight, texInfo->clampS, texInfo->clampT );
 
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, texInfo->realWidth << 1, texInfo->realHeight << 1, 0, GL_RGBA, glType, scaledDest );
-		OPENGL_CHECK_ERRORS;
 
         free( scaledDest );
     }
@@ -733,10 +721,7 @@ void TextureCache_LoadBackground( CachedTexture *texInfo )
 
 
     if (config.texture.enableMipmap)
-	{
         glGenerateMipmap(GL_TEXTURE_2D);
-		OPENGL_CHECK_ERRORS;
-	}
 }
 
 void TextureCache_Load( CachedTexture *texInfo )
@@ -885,7 +870,6 @@ void TextureCache_Load( CachedTexture *texInfo )
         printf("j=%u DEST=0x%x SIZE=%i F=0x%x, W=%i, H=%i, T=0x%x\n", j, dest, texInfo->textureBytes,glFormat, glWidth, glHeight, glType); fflush(stdout);
 #endif
         glTexImage2D( GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight, 0, glFormat, glType, dest);
-		OPENGL_CHECK_ERRORS;
     }
     else
     {
@@ -903,17 +887,15 @@ void TextureCache_Load( CachedTexture *texInfo )
             _2xSaI5551( (u16*)dest, (u16*)scaledDest, texInfo->realWidth, texInfo->realHeight, 1, 1 );
 
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, texInfo->realWidth << 1, texInfo->realHeight << 1, 0, GL_RGBA, glType, scaledDest );
-		OPENGL_CHECK_ERRORS;
+
         free( scaledDest );
     }
 
     free(dest);
 
     if (config.texture.enableMipmap)
-	{
         glGenerateMipmap(GL_TEXTURE_2D);
-		OPENGL_CHECK_ERRORS;
-	}
+
 }
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -942,15 +924,15 @@ u32 TextureCache_CalculateCRC( u32 t, u32 width, u32 height )
     for (y = 0; y < height; y += n)
     {
         src = (void*) &TMEM[(gSP.textureTile[t]->tmem + (y * line)) & 511];
-        crc = CRC_Calculate( crc, src, bpl );
+        crc = Hash_Calculate( crc, src, bpl );
     }
 
     if (gSP.textureTile[t]->format == G_IM_FMT_CI)
     {
         if (gSP.textureTile[t]->size == G_IM_SIZ_4b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC16[gSP.textureTile[t]->palette], 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC16[gSP.textureTile[t]->palette], 4 );
         else if (gSP.textureTile[t]->size == G_IM_SIZ_8b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC256, 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC256, 4 );
     }
     return crc;
 }
@@ -963,40 +945,27 @@ void TextureCache_ActivateTexture( u32 t, CachedTexture *texture )
 #endif
 
     glActiveTexture( GL_TEXTURE0 + t );
-	OPENGL_CHECK_ERRORS;
-
     glBindTexture( GL_TEXTURE_2D, texture->glName );
-	OPENGL_CHECK_ERRORS;
 
     // Set filter mode. Almost always bilinear, but check anyways
     if ((gDP.otherMode.textureFilter == G_TF_BILERP) || (gDP.otherMode.textureFilter == G_TF_AVERAGE) || (config.texture.forceBilinear))
     {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		OPENGL_CHECK_ERRORS;
-
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		OPENGL_CHECK_ERRORS;
     }
     else
     {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		OPENGL_CHECK_ERRORS;
-
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		OPENGL_CHECK_ERRORS;
     }
 
     // Set clamping modes
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (texture->clampS) ? GL_CLAMP_TO_EDGE : GL_REPEAT );
-	OPENGL_CHECK_ERRORS;
-
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (texture->clampT) ? GL_CLAMP_TO_EDGE : GL_REPEAT );
-	OPENGL_CHECK_ERRORS;
 
     if (config.texture.maxAnisotropy > 0)
     {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, config.texture.maxAnisotropy);
-		OPENGL_CHECK_ERRORS;
     }
 
     texture->lastDList = RSP.DList;
@@ -1007,16 +976,9 @@ void TextureCache_ActivateTexture( u32 t, CachedTexture *texture )
 void TextureCache_ActivateDummy( u32 t)
 {
     glActiveTexture(GL_TEXTURE0 + t);
-	OPENGL_CHECK_ERRORS;
-
     glBindTexture(GL_TEXTURE_2D, cache.dummy->glName );
-	OPENGL_CHECK_ERRORS;
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	OPENGL_CHECK_ERRORS;
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	OPENGL_CHECK_ERRORS;
 }
 
 int _background_compare(CachedTexture *current, u32 crc)
@@ -1037,14 +999,14 @@ void TextureCache_UpdateBackground()
     u32 numBytes = gSP.bgImage.width * gSP.bgImage.height << gSP.bgImage.size >> 1;
     u32 crc;
 
-    crc = CRC_Calculate( 0xFFFFFFFF, &RDRAM[gSP.bgImage.address], numBytes );
+    crc = Hash_Calculate( 0xFFFFFFFF, &RDRAM[gSP.bgImage.address], numBytes );
 
     if (gSP.bgImage.format == G_IM_FMT_CI)
     {
         if (gSP.bgImage.size == G_IM_SIZ_4b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC16[gSP.bgImage.palette], 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC16[gSP.bgImage.palette], 4 );
         else if (gSP.bgImage.size == G_IM_SIZ_8b)
-            crc = CRC_Calculate( crc, &gDP.paletteCRC256, 4 );
+            crc = Hash_Calculate( crc, &gDP.paletteCRC256, 4 );
     }
 
     //before we traverse cache, check to see if texture is already bound:
@@ -1080,13 +1042,9 @@ void TextureCache_UpdateBackground()
     cache.misses++;
 
     glActiveTexture(GL_TEXTURE0);
-	OPENGL_CHECK_ERRORS;
-
     cache.current[0] = TextureCache_AddTop();
 
     glBindTexture( GL_TEXTURE_2D, cache.current[0]->glName );
-	OPENGL_CHECK_ERRORS;
-
     cache.current[0]->address = gSP.bgImage.address;
     cache.current[0]->crc = crc;
     cache.current[0]->format = gSP.bgImage.format;
@@ -1122,7 +1080,7 @@ void TextureCache_UpdateBackground()
 
 int _texture_compare(u32 t, CachedTexture *current, u32 crc,  u32 width, u32 height, u32 clampWidth, u32 clampHeight)
 {
-    if  ((current != NULL) &&
+    return ((current != NULL) &&
         (current->crc == crc) &&
         (current->width == width) &&
         (current->height == height) &&
@@ -1135,10 +1093,7 @@ int _texture_compare(u32 t, CachedTexture *current, u32 crc,  u32 width, u32 hei
         (current->clampS == gSP.textureTile[t]->clamps) &&
         (current->clampT == gSP.textureTile[t]->clampt) &&
         (current->format == gSP.textureTile[t]->format) &&
-        (current->size == gSP.textureTile[t]->size))
-        return 1;
-    else
-        return 0;
+        (current->size == gSP.textureTile[t]->size));
 }
 
 
@@ -1149,6 +1104,7 @@ void TextureCache_Update( u32 t )
     u32 crc, maxTexels;
     u32 tileWidth, maskWidth, loadWidth, lineWidth, clampWidth, height;
     u32 tileHeight, maskHeight, loadHeight, lineHeight, clampHeight, width;
+    u32 maskSize;
 
     if (gDP.textureMode == TEXTUREMODE_BGIMAGE)
     {
@@ -1167,6 +1123,7 @@ void TextureCache_Update( u32 t )
 
     maskWidth = 1 << gSP.textureTile[t]->masks;
     maskHeight = 1 << gSP.textureTile[t]->maskt;
+    maskSize = 1 << (gSP.textureTile[t]->masks + gSP.textureTile[t]->maskt);
 
     loadWidth = gDP.loadTile->lrs - gDP.loadTile->uls + 1;
     loadHeight = gDP.loadTile->lrt - gDP.loadTile->ult + 1;
@@ -1178,16 +1135,20 @@ void TextureCache_Update( u32 t )
     else
         lineHeight = 0;
 
-    if (gDP.textureMode == TEXTUREMODE_TEXRECT)
-    {
+    if (likely(gSP.textureTile[t]->masks && (maskSize <= maxTexels))) {
+        width = maskWidth;
+    } else if (likely((tileWidth * tileHeight) <= maxTexels)) {
+        width = tileWidth;
+    } else if (likely(gDP.textureMode != TEXTUREMODE_TEXRECT)) {
+        if (gDP.loadType == LOADTYPE_TILE)
+            width = loadWidth;
+        else
+            width = lineWidth;
+    } else {
         u32 texRectWidth = gDP.texRect.width - gSP.textureTile[t]->uls;
         u32 texRectHeight = gDP.texRect.height - gSP.textureTile[t]->ult;
 
-        if (gSP.textureTile[t]->masks && ((maskWidth * maskHeight) <= maxTexels))
-            width = maskWidth;
-        else if ((tileWidth * tileHeight) <= maxTexels)
-            width = tileWidth;
-        else if ((tileWidth * texRectHeight) <= maxTexels)
+        if ((tileWidth * texRectHeight) <= maxTexels)
             width = tileWidth;
         else if ((texRectWidth * tileHeight) <= maxTexels)
             width = gDP.texRect.width;
@@ -1197,37 +1158,27 @@ void TextureCache_Update( u32 t )
             width = loadWidth;
         else
             width = lineWidth;
+    }
 
-        if (gSP.textureTile[t]->maskt && ((maskWidth * maskHeight) <= maxTexels))
-            height = maskHeight;
-        else if ((tileWidth * tileHeight) <= maxTexels)
-            height = tileHeight;
-        else if ((tileWidth * texRectHeight) <= maxTexels)
-            height = gDP.texRect.height;
-        else if ((texRectWidth * tileHeight) <= maxTexels)
-            height = tileHeight;
-        else if ((texRectWidth * texRectHeight) <= maxTexels)
-            height = gDP.texRect.height;
-        else if (gDP.loadType == LOADTYPE_TILE)
+    if (likely(gSP.textureTile[t]->maskt && (maskSize <= maxTexels))) {
+        height = maskHeight;
+    } else if (likely((tileWidth * tileHeight) <= maxTexels)) {
+        height = tileHeight;
+    } else if (likely(gDP.textureMode != TEXTUREMODE_TEXRECT)) {
+        if (gDP.loadType == LOADTYPE_TILE)
             height = loadHeight;
         else
             height = lineHeight;
-    }
-    else
-    {
-        if (gSP.textureTile[t]->masks && ((maskWidth * maskHeight) <= maxTexels))
-            width = maskWidth;
-        else if ((tileWidth * tileHeight) <= maxTexels)
-            width = tileWidth;
-        else if (gDP.loadType == LOADTYPE_TILE)
-            width = loadWidth;
-        else
-            width = lineWidth;
+    } else {
+        u32 texRectWidth = gDP.texRect.width - gSP.textureTile[t]->uls;
+        u32 texRectHeight = gDP.texRect.height - gSP.textureTile[t]->ult;
 
-        if (gSP.textureTile[t]->maskt && ((maskWidth * maskHeight) <= maxTexels))
-            height = maskHeight;
-        else if ((tileWidth * tileHeight) <= maxTexels)
+        if ((tileWidth * texRectHeight) <= maxTexels)
+            height = gDP.texRect.height;
+        else if ((texRectWidth * tileHeight) <= maxTexels)
             height = tileHeight;
+        else if ((texRectWidth * texRectHeight) <= maxTexels)
+            height = gDP.texRect.height;
         else if (gDP.loadType == LOADTYPE_TILE)
             height = loadHeight;
         else
@@ -1293,7 +1244,6 @@ void TextureCache_Update( u32 t )
     cache.misses++;
 
     glActiveTexture( GL_TEXTURE0 + t);
-	OPENGL_CHECK_ERRORS;
 
     cache.current[t] = TextureCache_AddTop();
 
@@ -1303,7 +1253,6 @@ void TextureCache_Update( u32 t )
     }
 
     glBindTexture( GL_TEXTURE_2D, cache.current[t]->glName );
-	OPENGL_CHECK_ERRORS;
 
     cache.current[t]->address = gDP.textureImage.address;
     cache.current[t]->crc = crc;
@@ -1381,15 +1330,7 @@ void TextureCache_Update( u32 t )
 void TextureCache_ActivateNoise(u32 t)
 {
     glActiveTexture(GL_TEXTURE0 + t);
-	OPENGL_CHECK_ERRORS;
-
     glBindTexture(GL_TEXTURE_2D, cache.glNoiseNames[RSP.DList & 0x1F]);
-	OPENGL_CHECK_ERRORS;
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-	OPENGL_CHECK_ERRORS;
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-	OPENGL_CHECK_ERRORS;
 }
-

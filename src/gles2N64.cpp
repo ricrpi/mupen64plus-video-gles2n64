@@ -226,6 +226,8 @@ EXPORT int CALL RomOpen (void)
     OGL.mustRenderDlist = false;
 
     frameSkipper.setTargetFPS(config.romPAL ? 50 : 60);
+    frameSkipper.setSkips(config.autoFrameSkip,
+        config.frameRenderRate);
     return 1;
 }
 

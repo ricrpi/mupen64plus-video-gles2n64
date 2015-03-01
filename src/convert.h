@@ -1,6 +1,8 @@
 #ifndef CONVERT_H
 #define CONVERT_H
 
+#include <byteswap.h>
+
 #include "Types.h"
 
 const volatile unsigned char Five2Eight[32] =
@@ -104,6 +106,11 @@ const volatile unsigned char One2Eight[2] =
 
 static inline void UnswapCopy( void *src, void *dest, u32 numBytes )
 {
+	if (numBytes == 1) {
+		*(u8 *)(dest) = *(u8 *)(src);
+		return;
+	}
+
     // copy leading bytes
     int leadingBytes = ((long)src) & 3;
     if (leadingBytes != 0)
@@ -127,13 +134,7 @@ static inline void UnswapCopy( void *src, void *dest, u32 numBytes )
     int numDWords = numBytes >> 2;
     while (numDWords--)
     {
-        u32 dword = *(u32 *)src;
-#ifdef ARM_ASM
-        asm("rev %0, %0" : "+r"(dword)::);
-#else
-        dword = ((dword<<24)|((dword<<8)&0x00FF0000)|((dword>>8)&0x0000FF00)|(dword>>24));
-#endif
-        *(u32 *)dest = dword;
+        *(u32 *)dest = bswap_32( *(u32 *)src );
         dest = (void *)((long)dest+4);
         src  = (void *)((long)src +4);
     }
@@ -178,20 +179,6 @@ inline void QWordInterleave( void *mem, u32 numDWords )
         *(int *)((long)mem + 12) = tmp1;
         mem = (void *)((long)mem + 16);
     }
-}
-
-
-inline u32 swapdword( u32 value )
-{
-#ifdef ARM_ASM
-    asm("rev %0, %0" : "+r"(value)::);
-    return value;
-#else
-    return ((value & 0xff000000) >> 24) |
-           ((value & 0x00ff0000) >>  8) |
-           ((value & 0x0000ff00) <<  8) |
-           ((value & 0x000000ff) << 24);
-#endif
 }
 
 inline u16 swapword( u16 value )
@@ -335,4 +322,3 @@ inline u32 I4_RGBA8888( u8 color )
 }
 
 #endif // CONVERT_H
-

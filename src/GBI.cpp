@@ -42,7 +42,7 @@ SpecialMicrocodeInfo specialMicrocodes[] =
     {F3DPD, FALSE, 0x1c4f7869, "Perfect Dark"},
     {F3DEX, FALSE, 0x0ace4c3f, "Mario Kart"},
     //{F3DEX, FALSE, 0xda51ccdb, "Rogue Squadron"},
-    //{F3DCBFD, FALSE, 0x1b4ace88, "RSP Gfx ucode F3DEXBG.NoN fifo 2.08  Yoshitaka Yasumoto 1999 Nintendo."},
+    {F3DCBFD, FALSE, 0x1b4ace88, "RSP Gfx ucode F3DEXBG.NoN fifo 2.08  Yoshitaka Yasumoto 1999 Nintendo."},
 };
 
 u32 G_RDPHALF_1, G_RDPHALF_2, G_RDPHALF_CONT;
@@ -826,9 +826,8 @@ MicrocodeInfo *GBI_DetectMicrocode( u32 uc_start, u32 uc_dstart, u16 uc_dsize )
     current->type = NONE;
 
     // See if we can identify it by CRC
-    uc_crc = CRC_Calculate( 0xFFFFFFFF, &RDRAM[uc_start & 0x1FFFFFFF], 4096);
+    uc_crc = CRC_Calculate(&RDRAM[uc_start & 0x1FFFFFFF], 4096);
     LOG(LOG_MINIMAL, "UCODE CRC=0x%x\n", uc_crc);
-
     for (u32 i = 0; i < sizeof( specialMicrocodes ) / sizeof( SpecialMicrocodeInfo ); i++)
     {
         if (uc_crc == specialMicrocodes[i].crc)

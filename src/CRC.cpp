@@ -48,10 +48,10 @@ void CRC_BuildTable()
 
 }
 
-u32 CRC_Calculate( u32 crc, void *buffer, u32 count )
+u32 CRC_Calculate(void *buffer, u32 count)
 {
     u8 *p;
-    u32 orig = crc;
+    u32 crc = 0xffffffff;
 
     p = (u8*) buffer;
 
@@ -71,23 +71,42 @@ u32 CRC_Calculate( u32 crc, void *buffer, u32 count )
     while (count--)
         crc = (crc >> 8) ^ CRCTable[(crc & 0xFF) ^ *p++];
 
-    return crc ^ orig;
+    return ~crc;
 }
 
-u32 CRC_CalculatePalette( u32 crc, void *buffer, u32 count )
+u32 Hash_CalculatePalette(void *buffer, u32 count)
 {
-    u8 *p;
-    u32 orig = crc;
+	unsigned int i;
+	u16 *data = (u16 *) buffer;
+	u32 hash = 0xffffffff;
 
-    p = (u8*) buffer;
-    while (count--)
-    {
-        crc = (crc >> 8) ^ CRCTable[(crc & 0xFF) ^ *p++];
-        crc = (crc >> 8) ^ CRCTable[(crc & 0xFF) ^ *p++];
+	count /= 4;
+	for(i = 0; i < count; ++i) {
+		hash += data[i << 2];
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
 
-        p += 6;
-    }
-
-    return crc ^ orig;
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+	return hash;
 }
 
+u32 Hash_Calculate(u32 hash, void *buffer, u32 count)
+{
+	unsigned int i;
+	u32 *data = (u32 *) buffer;
+
+	count /= 4;
+	for(i = 0; i < count; ++i) {
+		hash += data[i];
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
+
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+	return hash;
+}
