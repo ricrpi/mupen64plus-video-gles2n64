@@ -69,7 +69,7 @@ struct Config
     int     hackAlpha;
 
 	int 	printFPS;
-    bool    stretchVideo;
+    int    	stretchVideo;
     bool    romPAL;    //is the rom PAL
     char    romName[21];
 };
