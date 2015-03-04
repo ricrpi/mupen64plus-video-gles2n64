@@ -56,12 +56,16 @@ Option configOptions[] =
     {"", NULL, 0},
 
     {"#Window Settings:", NULL, 0},
-    {"window xpos", &config.window.xpos, 0},
-    {"window ypos", &config.window.ypos, 0},
+//    {"window xpos", &config.window.xpos, 0},
+//    {"window ypos", &config.window.ypos, 0},
     {"window width", &config.window.width, 400},
     {"window height", &config.window.height, 240},
-    {"window refwidth", &config.window.refwidth, 400},
-    {"window refheight", &config.window.refheight, 240},
+//    {"window refwidth", &config.window.refwidth, 400},
+//    {"window refheight", &config.window.refheight, 240},
+    {"multisampling", &config.multiSampling, 0},
+#ifdef VC
+    {"auto resolution", &config.useScreenResolution, 1},
+#endif
     {"", NULL, 0},
 
     {"#Framebuffer Settings:",NULL,0},
@@ -77,6 +81,7 @@ Option configOptions[] =
     {"video force", &config.video.force, 0},
     {"video width", &config.video.width, 320},
     {"video height", &config.video.height, 240},
+    {"video stretch", &config.stretchVideo, 0},
     {"", NULL, 0},
 
     {"#Render Settings:", NULL, 0},
@@ -96,10 +101,6 @@ Option configOptions[] =
     {"texture use IA", &config.texture.useIA, 0},
     {"texture fast CRC", &config.texture.fastCRC, 1},
     {"texture pow2", &config.texture.pow2, 1},
-    {"multisampling", &config.multiSampling, 0},
-#ifdef VC
-    {"auto resolution", &config.useScreenResolution, 1},
-#endif
     {"", NULL, 0},
 
     {"#Frame skip:", NULL, 0},

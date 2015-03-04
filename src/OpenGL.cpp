@@ -148,56 +148,6 @@ extern void _glcompiler_error(GLint shader);
 void OGL_InitStates()
 {
     GLint   success;
-   
-    char m_strDeviceStats[200];
-    m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
-
-    CoreVideo_Init();
-    
-    /* hard-coded attribute values */
-    const int iDOUBLEBUFFER = 1;
-
-    /* set opengl attributes */
-    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
-    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, config.verticalSync);
-    
-    if (config.multiSampling > 0)
-    {
-        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
-        if (config.multiSampling <= 2)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
-        else if (config.multiSampling <= 4)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
-        else if (config.multiSampling <= 8)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
-        else
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
-    }
-
-#ifdef VC
-    if (graphics_get_display_size(0 /* LCD */, &g_fb_width, &g_fb_height) < 0)
-        printf("ERROR: Failed to get display size\n");
-    if (config.useScreenResolution == 1)
-    {
-	config.window.width = g_fb_width;
-	config.window.height = g_fb_height;
-	config.framebuffer.width = g_fb_width;
-	config.framebuffer.height = g_fb_height;
-    }		
-#endif
-
-    if (CoreVideo_SetVideoMode(config.window.width, config.window.height, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
-	{
-		printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
-		return;
-	}
-
-	const unsigned char* m_pRenderStr = glGetString(GL_RENDERER);
-    const unsigned char* m_pVersionStr = glGetString(GL_VERSION);
-    const unsigned char* m_pVendorStr = glGetString(GL_VENDOR);
-
-    sprintf(m_strDeviceStats, "%.60s - %.128s : %.60s", m_pVendorStr, m_pRenderStr, m_pVersionStr);
-    printf("Video: Using OpenGL: %s\n", m_strDeviceStats); //TODO should use core DebugMessage();
 
     glEnable( GL_CULL_FACE );
 	OPENGL_CHECK_ERRORS;
@@ -408,6 +358,126 @@ else
 #endif
 //////
 
+bool OGL_CoreVideo_Start()
+{
+	char m_strDeviceStats[200];
+    m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
+
+	LOG(LOG_MINIMAL, "Initializing core video subsystem...\n" );
+    CoreVideo_Init();
+    
+    /* hard-coded attribute values */
+    const int iDOUBLEBUFFER = 1;
+
+    /* set opengl attributes */
+    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
+    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, config.verticalSync);
+    
+    /* use 16Bit RGB 565 color depth */
+    CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, 16);
+    CoreVideo_GL_SetAttribute(M64P_GL_RED_SIZE, 5);
+  	CoreVideo_GL_SetAttribute(M64P_GL_GREEN_SIZE, 6);
+  	CoreVideo_GL_SetAttribute(M64P_GL_BLUE_SIZE, 5);
+    
+    /* enable multisampling antialisasing */
+    if (config.multiSampling > 0)
+    {
+        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
+        if (config.multiSampling <= 2)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
+        else if (config.multiSampling <= 4)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
+        else if (config.multiSampling <= 8)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
+        else
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
+    }
+    
+	int current_w = config.window.width;
+    int current_h = config.window.height;
+	
+#ifdef VC
+	// Use VC get_display_size function to get the current screen resolution
+	
+    if (graphics_get_display_size(0 /* LCD */, &g_fb_width, &g_fb_height) < 0)
+        printf("ERROR: Failed to get display size\n");
+    if (config.useScreenResolution == 1)
+    {
+		config.window.width = g_fb_width;
+		config.window.height = g_fb_height;
+		config.framebuffer.width = g_fb_width;
+		config.framebuffer.height = g_fb_height;
+		current_w = g_fb_width;
+		current_h = g_fb_height;
+    }		
+#endif
+	
+	/* Set the video mode */
+    LOG(LOG_MINIMAL, "Setting video mode %dx%d...\n", current_w, current_h );
+    if (CoreVideo_SetVideoMode(current_w, current_h, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
+	{
+		printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
+		return false;
+	}
+
+	const unsigned char* m_pRenderStr = glGetString(GL_RENDERER);
+    const unsigned char* m_pVersionStr = glGetString(GL_VERSION);
+    const unsigned char* m_pVendorStr = glGetString(GL_VENDOR);
+    
+ 	sprintf(m_strDeviceStats, "%.60s - %.128s : %.60s", m_pVendorStr, m_pRenderStr, m_pVersionStr);
+    printf("Video: Using OpenGL: %s\n", m_strDeviceStats); //TODO should use core DebugMessage();
+	
+	//// paulscode, fixes the screen-size problem
+	const float dstRatio = (float)current_h / (float)current_w;
+    const float srcRatio = ( config.romPAL ? 9.0f/11.0f : 0.75f );
+    int videoWidth = 0;
+    int videoHeight = 0;
+    int x = 0;
+    int y = 0;
+    
+    //re-scale width and height on per-rom basis
+    float width = current_w;
+    float height = current_h;
+    
+   	if (!config.stretchVideo) 
+   	{
+   		// Dirty fix to keep aspect
+   		if(dstRatio != srcRatio) 
+   		{
+   			videoWidth = height / srcRatio;
+   			videoHeight = height;
+   			if (videoWidth > width)
+    		{
+    			videoWidth = width;
+    			videoHeight = width * srcRatio;
+    		}
+        }
+    } 
+    else 
+    {
+		videoWidth=current_w;
+		videoHeight=current_h;
+    }
+    x = (width - videoWidth) / 2;
+    y = (height - videoHeight) / 2;
+    
+    //set xpos and ypos
+    config.window.xpos = x;
+    config.window.ypos = y;
+    
+    //set width and height
+    config.window.width = (int)videoWidth;
+    config.window.height = (int)videoHeight;
+	if (config.framebuffer.enable!=1) 
+	{
+		config.framebuffer.xpos = x;
+		config.framebuffer.ypos = y;
+		config.framebuffer.width = (int)videoWidth;
+		config.framebuffer.height = (int)videoHeight;
+	}
+
+    return true;
+}
 
 bool OGL_Start()
 {
@@ -417,7 +487,8 @@ bool OGL_Start()
         return false;
 #endif
 //
-
+	
+	OGL_CoreVideo_Start();
     OGL_InitStates();
 
 #ifdef USE_SDL
@@ -572,6 +643,7 @@ void OGL_Stop()
 #ifdef USE_SDL
     SDL_QuitSubSystem( SDL_INIT_VIDEO );
 #endif
+	CoreVideo_Quit();
 
     if (config.framebuffer.enable)
     {
