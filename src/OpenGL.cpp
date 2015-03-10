@@ -9,10 +9,10 @@
 //// paulscode, added for SDL linkage:
 //#ifdef USE_SDL
 //    #include <SDL.h>
-     // TODO: Remove this bandaid for SDL 2.0 compatibility (needed for SDL_SetVideoMode)
+// TODO: Remove this bandaid for SDL 2.0 compatibility (needed for SDL_SetVideoMode)
 //    #if SDL_VERSION_ATLEAST(2,0,0)
 //    #include "sdl2_compat.h" // Slightly hacked version of core/vidext_sdl2_compat.h
- //   #endif
+//   #endif
 //#endif
 ////
 
@@ -155,7 +155,7 @@ void OGL_InitStates()
     glEnableVertexAttribArray( SC_POSITION );
 	OPENGL_CHECK_ERRORS;
 
-	glEnable( GL_DEPTH_TEST );
+    glEnable( GL_DEPTH_TEST );
 	OPENGL_CHECK_ERRORS;
 
     glDepthFunc( GL_ALWAYS );
@@ -220,9 +220,9 @@ void OGL_InitStates()
 	OPENGL_CHECK_ERRORS;
 
     glShaderSource( OGL.defaultVertShader, 1, (const char**) src, NULL );
-    OPENGL_CHECK_ERRORS;
+        OPENGL_CHECK_ERRORS;
 
-	glCompileShader( OGL.defaultVertShader );
+    glCompileShader( OGL.defaultVertShader );
 	OPENGL_CHECK_ERRORS;
 
     glGetShaderiv( OGL.defaultVertShader, GL_COMPILE_STATUS, &success );
@@ -236,19 +236,19 @@ void OGL_InitStates()
     OGL.defaultProgram = glCreateProgram();
 	OPENGL_CHECK_ERRORS;
 
-	glBindAttribLocation( OGL.defaultProgram, 0, "aPosition" );
+    glBindAttribLocation( OGL.defaultProgram, 0, "aPosition" );
 	OPENGL_CHECK_ERRORS;
 
-	glBindAttribLocation( OGL.defaultProgram, 1, "aTexCoord" );
+    glBindAttribLocation( OGL.defaultProgram, 1, "aTexCoord" );
 	OPENGL_CHECK_ERRORS;
 
-	glAttachShader( OGL.defaultProgram, OGL.defaultFragShader );
+    glAttachShader( OGL.defaultProgram, OGL.defaultFragShader );
 	OPENGL_CHECK_ERRORS;
 
-	glAttachShader( OGL.defaultProgram, OGL.defaultVertShader );
+    glAttachShader( OGL.defaultProgram, OGL.defaultVertShader );
 	OPENGL_CHECK_ERRORS;
 
-	glLinkProgram( OGL.defaultProgram );
+    glLinkProgram( OGL.defaultProgram );
 	OPENGL_CHECK_ERRORS;
     glGetProgramiv( OGL.defaultProgram, GL_LINK_STATUS, &success );
 	OPENGL_CHECK_ERRORS;
@@ -360,10 +360,10 @@ else
 
 bool OGL_CoreVideo_Start()
 {
-	char m_strDeviceStats[200];
+    char m_strDeviceStats[200];
     m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
 
-	LOG(LOG_MINIMAL, "Initializing core video subsystem...\n" );
+    LOG(LOG_MINIMAL, "Initializing core video subsystem...\n" );
     CoreVideo_Init();
     
     /* hard-coded attribute values */
@@ -376,8 +376,8 @@ bool OGL_CoreVideo_Start()
     /* use 16Bit RGB 565 color depth */
     CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, 16);
     CoreVideo_GL_SetAttribute(M64P_GL_RED_SIZE, 5);
-  	CoreVideo_GL_SetAttribute(M64P_GL_GREEN_SIZE, 6);
-  	CoreVideo_GL_SetAttribute(M64P_GL_BLUE_SIZE, 5);
+    CoreVideo_GL_SetAttribute(M64P_GL_GREEN_SIZE, 6);
+    CoreVideo_GL_SetAttribute(M64P_GL_BLUE_SIZE, 5);
     
     /* enable multisampling antialisasing */
     if (config.multiSampling > 0)
@@ -393,7 +393,7 @@ bool OGL_CoreVideo_Start()
             CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
     }
     
-	int current_w = config.window.width;
+    int current_w = config.window.width;
     int current_h = config.window.height;
 	
 #ifdef VC
@@ -403,61 +403,59 @@ bool OGL_CoreVideo_Start()
         printf("ERROR: Failed to get display size\n");
     if (config.useScreenResolution == 1)
     {
-		config.window.width = g_fb_width;
-		config.window.height = g_fb_height;
-		config.framebuffer.width = g_fb_width;
-		config.framebuffer.height = g_fb_height;
-		current_w = g_fb_width;
-		current_h = g_fb_height;
+	config.window.width = g_fb_width;
+	config.window.height = g_fb_height;
+	config.framebuffer.width = g_fb_width;
+	config.framebuffer.height = g_fb_height;
+	current_w = g_fb_width;
+	current_h = g_fb_height;
     }		
 #endif
 	
 	/* Set the video mode */
     LOG(LOG_MINIMAL, "Setting video mode %dx%d...\n", current_w, current_h );
     if (CoreVideo_SetVideoMode(current_w, current_h, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
-	{
-		printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
-		return false;
-	}
+    {
+	printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
+	return false;
+    }
 
-	const unsigned char* m_pRenderStr = glGetString(GL_RENDERER);
+    const unsigned char* m_pRenderStr = glGetString(GL_RENDERER);
     const unsigned char* m_pVersionStr = glGetString(GL_VERSION);
     const unsigned char* m_pVendorStr = glGetString(GL_VENDOR);
     
- 	sprintf(m_strDeviceStats, "%.60s - %.128s : %.60s", m_pVendorStr, m_pRenderStr, m_pVersionStr);
+    sprintf(m_strDeviceStats, "%.60s - %.128s : %.60s", m_pVendorStr, m_pRenderStr, m_pVersionStr);
     printf("Video: Using OpenGL: %s\n", m_strDeviceStats); //TODO should use core DebugMessage();
 	
-	//// paulscode, fixes the screen-size problem
-	const float dstRatio = (float)current_h / (float)current_w;
+    //// paulscode, fixes the screen-size problem
+    const float dstRatio = (float)current_h / (float)current_w;
     const float srcRatio = ( config.romPAL ? 9.0f/11.0f : 0.75f );
-    int videoWidth = 0;
-    int videoHeight = 0;
+    int videoWidth = current_w;
+    int videoHeight = current_h;
     int x = 0;
     int y = 0;
     
     //re-scale width and height on per-rom basis
     float width = current_w;
     float height = current_h;
-    
-   	if (!config.stretchVideo) 
+    if (!config.stretchVideo) 
+    {
+   	// Dirty fix to keep aspect
+   	// if source and destination aspect ratios are not equal recalculate videoWith/Height
+   	if(dstRatio != srcRatio) 
    	{
-   		// Dirty fix to keep aspect
-   		if(dstRatio != srcRatio) 
-   		{
-   			videoWidth = height / srcRatio;
-   			videoHeight = height;
-   			if (videoWidth > width)
+   		videoWidth = height / srcRatio;
+   		videoHeight = height;
+   		if (videoWidth > width)
     		{
-    			videoWidth = width;
-    			videoHeight = width * srcRatio;
+    		    videoWidth = width;
+    		    videoHeight = width * srcRatio;
     		}
         }
-    } 
-    else 
-    {
-		videoWidth=current_w;
-		videoHeight=current_h;
+        // else keep videoWidth/Height 
     }
+    // else keep videoWidth/Height 
+
     x = (width - videoWidth) / 2;
     y = (height - videoHeight) / 2;
     
@@ -468,13 +466,13 @@ bool OGL_CoreVideo_Start()
     //set width and height
     config.window.width = (int)videoWidth;
     config.window.height = (int)videoHeight;
-	if (config.framebuffer.enable!=1) 
-	{
-		config.framebuffer.xpos = x;
-		config.framebuffer.ypos = y;
-		config.framebuffer.width = (int)videoWidth;
-		config.framebuffer.height = (int)videoHeight;
-	}
+    //if (config.framebuffer.enable!=1) 
+    //{
+	config.framebuffer.xpos = x;
+	config.framebuffer.ypos = y;
+	config.framebuffer.width = (int)videoWidth;
+	config.framebuffer.height = (int)videoHeight;
+    //}
 
     return true;
 }
