@@ -37,6 +37,10 @@ inline void Transpose3x3Matrix( float mtx[4][4] )
     mtx[2][1] = tmp;
 }
 
+#ifdef __VFP_OPT
+void MathInitVFP();
+#endif
+
 #ifdef __NEON_OPT
 void MathInitNeon();
 #endif
