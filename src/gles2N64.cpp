@@ -54,6 +54,11 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle,
 	CoreVideo_Init 			= (ptr_VidExt_Init)			dlsym(CoreLibHandle, "VidExt_Init");
 	CoreVideo_Quit 			= (ptr_VidExt_Quit)			dlsym(CoreLibHandle, "VidExt_Quit");
 
+#ifdef __VFP_OPT
+    MathInitVFP();
+    gSPInitVFP();
+#endif
+
 #ifdef __NEON_OPT
     //if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM &&
     //        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0)
@@ -62,6 +67,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle,
         gSPInitNeon();
     //}
 #endif
+
     ticksInitialize();
 
     //int max_frames = Android_JNI_GetMaxFrameSkip();

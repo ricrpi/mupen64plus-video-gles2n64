@@ -111,6 +111,10 @@ ifneq ("$(filter arm%,$(HOST_CPU))","")
     CPU := ARM
     ARCH_DETECTED := 32BITS
     PIC ?= 1
+    ifeq ($(VFP), 1)
+      CFLAGS += -DARM_ASM
+      CFLAGS += -D__VFP_OPT
+    endif
     ifeq ($(NEON), 1)
       CFLAGS += -DARM_ASM
       CFLAGS += -D__NEON_OPT
@@ -375,6 +379,12 @@ $(SRCDIR)/S2DEX.cpp \
 $(SRCDIR)/ShaderCombiner.cpp \
 $(SRCDIR)/Textures.cpp \
 $(SRCDIR)/VI.cpp
+
+ifeq ($(VFP), 1)
+  SOURCE += $(SRCDIR)/gSPVFP.cpp
+  SOURCE += $(SRCDIR)/3DMathVFP.cpp
+endif
+
 ifeq ($(NEON), 1)    
   SOURCE += $(SRCDIR)/gSPNeon.cpp
   SOURCE += $(SRCDIR)/3DMathNeon.cpp
@@ -405,6 +415,7 @@ targets:
 	@echo "    NO_ASM=1      == build without inline assembly code (x86 MMX/SSE)"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
 	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3 -flto)"
+	@echo "    VFP=1         == (ARM only) build with VFP optimizations"
 	@echo "    NEON=1        == (ARM only) build with NEON optimizations"
 	@echo "    VC=1 	 == build against Broadcom Videocore GLESv2"
 	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"
