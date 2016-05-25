@@ -247,12 +247,14 @@ endif
 ifeq ($(OS), MINGW)
   GL_LDLIBS = -lopengl32
 endif
-ifeq ($(origin GL_CFLAGS) $(origin GL_LDLIBS), undefined undefined)
-  ifeq ($(shell $(PKG_CONFIG) --modversion gl 2>/dev/null),)
-    $(error No OpenGL development libraries found!)
+ifneq ($(USE_GLES), 1)
+  ifeq ($(origin GL_CFLAGS) $(origin GL_LDLIBS), undefined undefined)
+    ifeq ($(shell $(PKG_CONFIG) --modversion gl 2>/dev/null),)
+      $(error No OpenGL development libraries found!)
+    endif
+    GL_CFLAGS += $(shell $(PKG_CONFIG) --cflags gl)
+    GL_LDLIBS +=  $(shell $(PKG_CONFIG) --libs gl)
   endif
-  GL_CFLAGS += $(shell $(PKG_CONFIG) --cflags gl)
-  GL_LDLIBS +=  $(shell $(PKG_CONFIG) --libs gl)
 endif
 CFLAGS += $(GL_CFLAGS)
 LDLIBS += $(GL_LDLIBS)
@@ -417,6 +419,7 @@ targets:
 	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3 -flto)"
 	@echo "    VFP=1         == (ARM only) build with VFP optimizations"
 	@echo "    NEON=1        == (ARM only) build with NEON optimizations"
+	@echo "    USE_GLES=1    == build against GLESv2 instead of OpenGL"
 	@echo "    VC=1 	 == build against Broadcom Videocore GLESv2"
 	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"
 	@echo "    PIC=(1|0)     == Force enable/disable of position independent code"
