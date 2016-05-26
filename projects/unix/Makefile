@@ -158,12 +158,17 @@ CXXFLAGS += -D__VEC4_OPT
 endif
 
 ifeq ($(VC), 1)
-CFLAGS += -DARM -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-CXXFLAGS += -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-LDLIBS += -lm -L/opt/vc/lib -lEGL -lbcm_host
+  GL_CFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
+  GL_LDLIBS += -L/opt/vc/lib -lEGL -lbcm_host -lvcos -lvchiq_arm
+  CFLAGS += -DARM -DVC
+  CXXFLAGS += -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
+  LDLIBS += -lm
+  USE_GLES=1
 endif
 
-LDLIBS += -lGLESv2 
+ifeq ($(USE_GLES), 1)
+  GL_LDLIBS += -lGLESv2
+endif
 
 ifeq ($(CPU), X86)
   CFLAGS += -msse
