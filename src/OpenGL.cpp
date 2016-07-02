@@ -257,10 +257,11 @@ void OGL_InitStates()
         LOG( LOG_ERROR, "Failed to link default program.\n" );
         _glcompiler_error( OGL.defaultFragShader );
     }
-    glUniform1i( glGetUniformLocation( OGL.defaultProgram, "uTex" ), 0 );
-	OPENGL_CHECK_ERRORS;
 
     glUseProgram( OGL.defaultProgram );
+	OPENGL_CHECK_ERRORS;
+
+    glUniform1i( glGetUniformLocation( OGL.defaultProgram, "uTex" ), 0 );
 	OPENGL_CHECK_ERRORS;
 }
 
