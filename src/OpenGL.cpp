@@ -267,6 +267,8 @@ void OGL_InitStates()
 
 void OGL_UpdateScale()
 {
+    if (VI.width == 0 || VI.height == 0)
+        return;
     OGL.scaleX = (float)config.framebuffer.width / (float)VI.width;
     OGL.scaleY = (float)config.framebuffer.height / (float)VI.height;
 }
@@ -484,10 +486,10 @@ bool OGL_Start()
 #ifdef USE_SDL
     if (!OGL_SDL_Start())
         return false;
+#else
+    if (!OGL_CoreVideo_Start())
+        return false;
 #endif
-//
-	
-	OGL_CoreVideo_Start();
     OGL_InitStates();
 
 #ifdef USE_SDL
