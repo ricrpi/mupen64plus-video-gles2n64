@@ -589,16 +589,20 @@ bool OGL_Start()
     }
 
     //check extensions
-    if ((config.texture.maxAnisotropy>0) && !OGL_IsExtSupported("GL_EXT_texture_filter_anistropic"))
+    GLfloat f = 0.0f;
+
+    if (!OGL_IsExtSupported("GL_EXT_texture_filter_anistropic"))
     {
         LOG(LOG_WARNING, "Anistropic Filtering is not supported.\n");
         config.texture.maxAnisotropy = 0;
     }
+    else
+    {
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &f);
+		OPENGL_CHECK_ERRORS;
+    }
 
-    float f = 0;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &f);
-	OPENGL_CHECK_ERRORS;
-    if (config.texture.maxAnisotropy > ((int)f))
+	if (config.texture.maxAnisotropy > ((int)f))
     {
         LOG(LOG_WARNING, "Clamping max anistropy to %ix.\n", (int)f);
         config.texture.maxAnisotropy = (int)f;
