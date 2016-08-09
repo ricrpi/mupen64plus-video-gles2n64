@@ -5,16 +5,11 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <assert.h>
 
-//// paulscode, added for SDL linkage:
-//#ifdef USE_SDL
-//    #include <SDL.h>
-// TODO: Remove this bandaid for SDL 2.0 compatibility (needed for SDL_SetVideoMode)
-//    #if SDL_VERSION_ATLEAST(2,0,0)
-//    #include "sdl2_compat.h" // Slightly hacked version of core/vidext_sdl2_compat.h
-//   #endif
-//#endif
-////
+#ifdef VC
+#include <bcm_host.h>
+#endif
 
 #include "Common.h"
 #include "gles2N64.h"
@@ -31,9 +26,7 @@
 #include "ticks.h"
 #include "OGLDebug.h"
 #include "FrameSkipper.h"
-#ifdef VC
-#include <bcm_host.h>
-#endif
+
 
 //#define DEBUG_PRINT(...) printf(__VA_ARGS__)
 
@@ -314,11 +307,11 @@ bool OGL_SDL_Start()
 //// paulscode, added for switching between modes RGBA8888 and RGB565
 // (part of the color banding fix)
 int bitsPP;
-if( Android_JNI_UseRGBA8888() )
+//if( Android_JNI_UseRGBA8888() )
     bitsPP = 32;
-else
-    bitsPP = 16;
-////
+//else
+//    bitsPP = 16;
+/////
 
     // TODO: Replace SDL_SetVideoMode with something that is SDL 2.0 compatible
     //       Better yet, eliminate all SDL calls by using the Mupen64Plus core api
@@ -330,7 +323,6 @@ else
     }
 
 //// paulscode, fixes the screen-size problem
-    const float ratio = ( config.romPAL ? 9.0f/11.0f : 0.75f );
     int videoWidth = current_w;
     int videoHeight = current_h;
     int x = 0;
@@ -1121,6 +1113,9 @@ void OGL_DrawTriangle(SPVertex *vertices, int v0, int v1, int v2)
 
 void OGL_AddTriangle(int v0, int v1, int v2)
 {
+#ifdef DEBUG
+	assert(OGL.triangles.num + 3 < 1024);
+#endif
     OGL.triangles.elements[OGL.triangles.num++] = v0;
     OGL.triangles.elements[OGL.triangles.num++] = v1;
     OGL.triangles.elements[OGL.triangles.num++] = v2;
@@ -1520,9 +1515,6 @@ void OGL_ClearDepthBuffer()
     if ((config.updateMode == SCREEN_UPDATE_AT_1ST_PRIMITIVE) && OGL.screenUpdate)
         OGL_SwapBuffers();
 
-    //float depth = 1.0 - (gDP.fillColor.z / ((float)0x3FFF)); // broken on OMAP3
-    //float depth = gDP.fillColor.z ;
-
 /////// paulscode, graphics bug-fixes
     glDisable( GL_SCISSOR_TEST );
 	OPENGL_CHECK_ERRORS;
@@ -1530,9 +1522,7 @@ void OGL_ClearDepthBuffer()
     glDepthMask( GL_TRUE );  // fixes side-bar graphics glitches
 	OPENGL_CHECK_ERRORS;
 
-//    glClearDepthf( depth );  // broken on Qualcomm Adreno
-
-    glClearDepthf( 1.0f );  // fixes missing graphics on Qualcomm Adreno
+    glClearDepthf( 1.0f );
 	OPENGL_CHECK_ERRORS;
 
     glClearColor( 0, 0, 0, 1 );
@@ -1743,21 +1733,18 @@ void OGL_SwapBuffers()
 
     // if emulator defined a render callback function, call it before
 	// buffer swap
-    if (renderCallback) (*renderCallback)();
+    if (renderCallback) (*renderCallback)(true);
 
     OGL.screenUpdate = false;
 
     if (config.forceBufferClear)
     {
 /////// paulscode, graphics bug-fixes
-   // float depth = gDP.fillColor.z ;
     glDisable( GL_SCISSOR_TEST );
 	OPENGL_CHECK_ERRORS;
 
     glDepthMask( GL_TRUE );  // fixes side-bar graphics glitches
 	OPENGL_CHECK_ERRORS;
-
-//    glClearDepthf( depth );  // broken on Qualcomm Adreno
 
     glClearDepthf( 1.0f );  // fixes missing graphics on Qualcomm Adreno
 	OPENGL_CHECK_ERRORS;
@@ -1777,17 +1764,42 @@ void OGL_SwapBuffers()
 
 }
 
-void OGL_ReadScreen( void *dest, int *width, int *height )
+void OGL_ReadScreen( void * pdest, int *width, int *height )
 {
-    if (width)
-        *width = config.framebuffer.width;
-    if (height)
+	if (width != NULL)
+    {
+	    *width = config.framebuffer.width;
+	}
+    if (height != NULL)
+	{
         *height = config.framebuffer.height;
+	}
 
-    if (dest == NULL)
-        return;
+    if (pdest == NULL)
+    {
+	    return;
+	}
 
-    glReadPixels( config.framebuffer.xpos, config.framebuffer.ypos, config.framebuffer.width, config.framebuffer.height, GL_RGBA, GL_UNSIGNED_BYTE, dest );
+	uint8_t* const dest = (uint8_t*)pdest;   
+	const uint32_t pixelCount = config.framebuffer.width * config.framebuffer.height;
+	uint8_t* temp_dest = (uint8_t*)malloc(pixelCount * 4U);
+
+	if (temp_dest == NULL)
+	{
+		return;
+	}
+
+    glReadPixels( config.framebuffer.xpos, config.framebuffer.ypos, config.framebuffer.width, config.framebuffer.height, GL_RGBA, GL_UNSIGNED_BYTE, temp_dest );
 	OPENGL_CHECK_ERRORS;
+	// The core expects the buffer to be in GL_RGB and not pixelCount *4 in length so convert
+	uint32_t j = 0U;
+	for (uint32_t i = 0U; i < pixelCount*4U; i += 4U)
+	{
+		dest[j + 0U] = temp_dest[i + 0U];
+		dest[j + 1U] = temp_dest[i + 1U];
+		dest[j + 2U] = temp_dest[i + 2U];
+		j += 3U;
+	}
+	free(temp_dest);
 }
 
