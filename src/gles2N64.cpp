@@ -362,7 +362,7 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int front)
     OGL_ReadScreen(dest, width, height);
 }
 
-EXPORT void CALL SetRenderingCallback(void (*callback)())
+EXPORT void CALL SetRenderingCallback(void (*callback)(int))
 {
     renderCallback = callback;
 }
