@@ -8,7 +8,7 @@ extern void (*TransformVectorNormalize)(float vec[3], float mtx[4][4]);
 extern void (*Normalize)(float v[3]);
 extern float (*DotProduct)(float v0[3], float v1[3]);
 
-inline void CopyMatrix( float m0[4][4], float m1[4][4] )
+inline void CopyMatrix( float m0[4][4], const float m1[4][4] )
 {
     memcpy( m0, m1, 16 * sizeof( float ) );
 }

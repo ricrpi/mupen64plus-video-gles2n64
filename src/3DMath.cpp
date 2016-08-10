@@ -27,10 +27,9 @@ static void Normalize_default(float v[3])
 
 static void TransformVectorNormalize_default(float vec[3], float mtx[4][4])
 {
-    float len;
-    float x = vec[0];
-    float y = vec[1];
-    float z = vec[2];
+    const float x = vec[0];
+    const float y = vec[1];
+    const float z = vec[2];
 
     vec[0] = mtx[0][0] * x
            + mtx[1][0] * y

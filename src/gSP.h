@@ -255,7 +255,7 @@ extern void (*gSPTransformNormal4)(u32 v, float mtx[4][4]);
 extern void (*gSPLightVertex4)(u32 v);
 extern void (*gSPBillboardVertex4)(u32 v);
 #endif
-extern void (*gSPTransformVertex)(float vtx[4], float mtx[4][4]);
+extern void (*gSPTransformVertex)(float vtx[4], const float mtx[4][4]);
 extern void (*gSPLightVertex)(u32 v);
 extern void (*gSPBillboardVertex)(u32 v, u32 i);
 

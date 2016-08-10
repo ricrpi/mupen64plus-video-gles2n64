@@ -212,7 +212,7 @@ void gSP4Triangles(const s32 v00, const s32 v01, const s32 v02,
 
 gSPInfo gSP;
 
-f32 identityMatrix[4][4] =
+const f32 identityMatrix[4][4] =
 {
     { 1.0f, 0.0f, 0.0f, 0.0f },
     { 0.0f, 1.0f, 0.0f, 0.0f },
@@ -423,7 +423,7 @@ void gSPProcessVertex4(u32 v)
 }
 #endif
 
-void gSPClipVertex(u32 v)
+void gSPClipVertex(const u32 v)
 {
     SPVertex *vtx = &OGL.triangles.vertices[v];
     vtx->clip = 0;
@@ -431,16 +431,13 @@ void gSPClipVertex(u32 v)
     if (vtx->x < -vtx->w)   vtx->clip |= CLIP_NEGX;
     if (vtx->y > +vtx->w)   vtx->clip |= CLIP_POSY;
     if (vtx->y < -vtx->w)   vtx->clip |= CLIP_NEGY;
-    //if (vtx->w < 0.1f)      vtx->clip |= CLIP_NEGW;
 }
 
-static void gSPTransformVertex_default(float vtx[4], float mtx[4][4])
+static void gSPTransformVertex_default(float vtx[4], const float mtx[4][4])
 {
-    float x, y, z, w;
-    x = vtx[0];
-    y = vtx[1];
-    z = vtx[2];
-    w = vtx[3];
+    const float x = vtx[0];
+    const float y = vtx[1];
+    const float z = vtx[2];
 
     vtx[0] = x * mtx[0][0] + y * mtx[1][0] + z * mtx[2][0] + mtx[3][0];
     vtx[1] = x * mtx[0][1] + y * mtx[1][1] + z * mtx[2][1] + mtx[3][1];
@@ -486,7 +483,6 @@ void gSPCombineMatrices()
 void gSPProcessVertex( u32 v )
 {
     f32 intensity;
-    f32 r, g, b;
 
     if (gSP.changed & CHANGED_MATRIX)
         gSPCombineMatrices();
@@ -1720,7 +1716,6 @@ void gSPObjSubMatrix( u32 mtx )
 {
 }
 
-
 #ifdef __VEC4_OPT
 void (*gSPTransformVertex4)(u32 v, float mtx[4][4]) =
         gSPTransformVertex4_default;
@@ -1729,7 +1724,7 @@ void (*gSPTransformNormal4)(u32 v, float mtx[4][4]) =
 void (*gSPLightVertex4)(u32 v) = gSPLightVertex4_default;
 void (*gSPBillboardVertex4)(u32 v) = gSPBillboardVertex4_default;
 #endif
-void (*gSPTransformVertex)(float vtx[4], float mtx[4][4]) =
+void (*gSPTransformVertex)(float vtx[4], const float mtx[4][4]) =
         gSPTransformVertex_default;
 void (*gSPLightVertex)(u32 v) = gSPLightVertex_default;
 void (*gSPBillboardVertex)(u32 v, u32 i) = gSPBillboardVertex_default;

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "OpenGL.h"
+#include "OGLDebug.h"
 #include "ShaderCombiner.h"
 #include "Common.h"
 #include "Textures.h"
@@ -410,10 +411,14 @@ void _glcompiler_error(GLint shader)
 	}
 
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+	OPENGL_CHECK_ERRORS;
+
    	if (len >= 0 && len < 300000)
 	{
 		log = (char*) malloc(len + 1);
 	    glGetShaderInfoLog(shader, len, &i, log);
+		OPENGL_CHECK_ERRORS;
+
 	    log[len] = 0;
 		LOG(LOG_ERROR, "COMPILE ERROR: %s \n", log);
 		free(log);
@@ -441,6 +446,8 @@ void _gllinker_error(GLint program)
 	{    
 		log = (char*) malloc(len + 1);
     	glGetProgramInfoLog(program, len, &i, log);
+		OPENGL_CHECK_ERRORS;
+
    		log[len] = 0;
 		LOG(LOG_ERROR, "LINK ERROR: %s \n", log);
     	free(log);
@@ -456,9 +463,16 @@ void _gllinker_error(GLint program)
 void _locate_attributes(ShaderProgram *p)
 {
     glBindAttribLocation(p->program, SC_POSITION,   "aPosition");
+	OPENGL_CHECK_ERRORS;
+
     glBindAttribLocation(p->program, SC_COLOR,      "aColor");
+	OPENGL_CHECK_ERRORS;
+
     glBindAttribLocation(p->program, SC_TEXCOORD0,  "aTexCoord0");
+	OPENGL_CHECK_ERRORS;
+
     glBindAttribLocation(p->program, SC_TEXCOORD1,  "aTexCoord1");
+	OPENGL_CHECK_ERRORS;
 };
 
 #define LocateUniform(A) \
@@ -627,8 +641,14 @@ void ShaderCombiner_Init()
     src[0] = buff;
     _vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(_vertex_shader, 1, (const char**) src, NULL);
+	OPENGL_CHECK_ERRORS;
+
     glCompileShader(_vertex_shader);
+	OPENGL_CHECK_ERRORS;
+
     glGetShaderiv(_vertex_shader, GL_COMPILE_STATUS, &success);
+	OPENGL_CHECK_ERRORS;
+
     if (!success)
     {
 		printf("Shader Source:\n%s\n", buff);
@@ -647,6 +667,8 @@ void ShaderCombiner_DeletePrograms(ShaderProgram *prog)
         ShaderCombiner_DeletePrograms(prog->left);
         ShaderCombiner_DeletePrograms(prog->right);
         glDeleteProgram(prog->program);
+		OPENGL_CHECK_ERRORS;
+
         //glDeleteShader(prog->fragment);
         free(prog);
         scProgramCount--;
@@ -736,6 +758,7 @@ void ShaderCombiner_Set(u64 mux, int flags)
     prog->lastUsed = OGL.frame_dl;
     scProgramCurrent = prog;
     glUseProgram(prog->program);
+	OPENGL_CHECK_ERRORS;
     _force_uniforms();
 }
 
@@ -826,6 +849,7 @@ ShaderProgram *ShaderCombiner_Compile(DecodedMux *dmux, int flags)
 #endif
 
     prog->program = glCreateProgram();
+	OPENGL_CHECK_ERRORS;
 
     //Compile:
     char *src[1];
@@ -833,12 +857,16 @@ ShaderProgram *ShaderCombiner_Compile(DecodedMux *dmux, int flags)
     GLint len[1];
     len[0] = min(4096, strlen(frag));
     prog->fragment = glCreateShader(GL_FRAGMENT_SHADER);
+	OPENGL_CHECK_ERRORS;
 
     glShaderSource(prog->fragment, 1, (const char**) src, len);
-    glCompileShader(prog->fragment);
+	OPENGL_CHECK_ERRORS;
 
+    glCompileShader(prog->fragment);
+	OPENGL_CHECK_ERRORS;
 
     glGetShaderiv(prog->fragment, GL_COMPILE_STATUS, &success);
+	OPENGL_CHECK_ERRORS;
     if (!success)
     {
 		printf("%d Shader Source:\n%s\n", __LINE__, frag);
@@ -852,9 +880,16 @@ ShaderProgram *ShaderCombiner_Compile(DecodedMux *dmux, int flags)
     //link
     _locate_attributes(prog);
     glAttachShader(prog->program, prog->fragment);
+	OPENGL_CHECK_ERRORS;
+
     glAttachShader(prog->program, prog->vertex);
+	OPENGL_CHECK_ERRORS;
+
     glLinkProgram(prog->program);
+	OPENGL_CHECK_ERRORS;
+
     glGetProgramiv(prog->program, GL_LINK_STATUS, &success);
+	OPENGL_CHECK_ERRORS;
     if (!success)
     {
         _gllinker_error(prog->program);
@@ -865,6 +900,7 @@ ShaderProgram *ShaderCombiner_Compile(DecodedMux *dmux, int flags)
 	}
     //remove fragment shader:
     glDeleteShader(prog->fragment);
+	OPENGL_CHECK_ERRORS;
 
     _locate_uniforms(prog);
     return prog;

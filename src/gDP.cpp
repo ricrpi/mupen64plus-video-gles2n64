@@ -23,8 +23,6 @@ bool _IsRenderTexture()
     bool foundFillRect=false;
     bool foundSetFillColor=false;
     bool foundSetCImg=false;
-    bool foundTxtRect=false;
-    int height;
     unsigned int newFillColor = 0;
     unsigned int dwPC = RSP.PC[RSP.PCi];       // This points to the next instruction
 
@@ -35,14 +33,12 @@ bool _IsRenderTexture()
 
         if ((w0>>24) == G_SETSCISSOR)
         {
-            height = ((w1>>0 )&0xFFF)/4;
             foundSetScissor = true;
             continue;
         }
 
         if ((w0>>24) == G_SETFILLCOLOR)
         {
-            height = ((w1>>0 )&0xFFF)/4;
             foundSetFillColor = true;
             newFillColor = w1;
             continue;
@@ -59,14 +55,12 @@ bool _IsRenderTexture()
             {
                 if( x1 == gDP.colorImage.width)
                 {
-                    height = y1;
                     foundFillRect = true;
                     continue;
                 }
 
                 if(x1 == (unsigned int)(gDP.colorImage.width-1))
                 {
-                    height = y1+1;
                     foundFillRect = true;
                     continue;
                 }
@@ -75,7 +69,6 @@ bool _IsRenderTexture()
 
         if ((w0>>24) == G_TEXRECT)
         {
-            foundTxtRect = true;
             break;
         }
 
@@ -377,7 +370,7 @@ void gDPSetColorImage( u32 format, u32 size, u32 width, u32 address )
 
     if (config.ignoreOffscreenRendering)
     {
-        int i;
+        unsigned int i;
 
         //colorimage byte size:
         //color image height is not the best thing to base this on, its normally set
@@ -411,16 +404,6 @@ void gDPSetColorImage( u32 format, u32 size, u32 width, u32 address )
         {
             OGL.renderingToTexture = true;
         }
-
-#if 0
-        if (OGL.renderingToTexture)
-        {
-            printf("start=%i end=%i\n", start, end);
-            printf("display=");
-            for(int i=0; i< VI.displayNum; i++) printf("%i,%i:", VI.display[i].start, VI.display[i].end);
-            printf("\n");
-        }
-#endif
     }
     else
     {
