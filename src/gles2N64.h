@@ -25,7 +25,7 @@ extern ptr_VidExt_Init			            CoreVideo_Init;
 extern ptr_VidExt_Quit                  CoreVideo_Quit;
 
 extern void (*CheckInterrupts)( void );
-extern void (*renderCallback)();
+extern void (*renderCallback)( int );
 
 
 #endif
