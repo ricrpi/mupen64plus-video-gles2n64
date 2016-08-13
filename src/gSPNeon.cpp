@@ -2,7 +2,7 @@
 #include "OpenGL.h"
 
 #ifdef __VEC4_OPT
-static void gSPTransformVertex4NEON(u32 v, float mtx[4][4])
+static void gSPTransformVertex4NEON(u32 v, const float mtx[4][4])
 {
     float *ptr = &OGL.triangles.vertices[v].x;
 
@@ -406,7 +406,7 @@ static void gSPBillboardVertex4NEON(u32 v)
 }
 #endif
 
-static void gSPTransformVertexNEON(float vtx[4], float mtx[4][4])
+static void gSPTransformVertexNEON(float vtx[4], const float mtx[4][4])
 {
 //optimised using cycle analyser
 #if 0

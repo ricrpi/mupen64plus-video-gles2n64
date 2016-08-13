@@ -46,7 +46,7 @@
     "orr        r0, r0, #0x000" #VEC_LEN "0000 \n\t" \
     "fmxr       fpscr, r0                      \n\t"
 
-static void gSPTransformVertex_vfp(float vtx[4], float mtx[4][4])
+static void gSPTransformVertex_vfp(float vtx[4], const float mtx[4][4])
 {
     // transforms vertex 'vtx' using tranform matrix 'mtx'
     // loads and fmacs are interleaved to better utilise pipelines
