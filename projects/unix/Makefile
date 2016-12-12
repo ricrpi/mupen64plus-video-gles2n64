@@ -356,6 +356,7 @@ OBJDIR = _obj$(POSTFIX)
 
 # list of source files to compile
 SOURCE = \
+$(SRCDIR)/convert.cpp \
 $(SRCDIR)/ticks.c \
 $(SRCDIR)/2xSAI.cpp \
 $(SRCDIR)/3DMath.cpp \
