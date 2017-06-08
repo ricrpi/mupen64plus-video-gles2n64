@@ -105,29 +105,9 @@ static void Normalize_neon(float v[3])
 	);
 }
 
-static float DotProduct_neon( float v0[3], float v1[3] )
-{
-    float dot;
-	asm volatile (
-	"vld1.32 		{d8}, [%1]!			\n\t"	//d8={x0,y0}
-	"vld1.32 		{d10}, [%2]!		\n\t"	//d10={x1,y1}
-	"flds 			s18, [%1, #0]	    \n\t"	//d9[0]={z0}
-	"flds 			s22, [%2, #0]	    \n\t"	//d11[0]={z1}
-	"vmul.f32 		d12, d8, d10		\n\t"	//d0= d2*d4
-	"vpadd.f32 		d12, d12, d12		\n\t"	//d0 = d[0] + d[1]
-	"vmla.f32 		d12, d9, d11		\n\t"	//d0 = d0 + d3*d5
-    "fmrs	        %0, s24	    		\n\t"	//r0 = s0
-	: "=r"(dot), "+r"(v0), "+r"(v1):
-    : "d8", "d9", "d10", "d11", "d12"
-
-	);
-    return dot;
-}
-
 void MathInitNeon()
 {
     MultMatrix = MultMatrix_neon;
     TransformVectorNormalize = TransformVectorNormalize_neon;
     Normalize = Normalize_neon;
-    DotProduct = DotProduct_neon;
 }
