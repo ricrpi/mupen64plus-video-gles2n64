@@ -41,7 +41,7 @@ static void TransformVectorNormalize_neon(float vec[3], float mtx[4][4])
 	asm volatile (
 	"vld1.32 		{d0}, [%1]  			\n\t"	//Q0 = v
 	"flds    		s2, [%1, #8]  			\n\t"	//Q0 = v
-	"vld1.32 		{d18-d19}, [%0]!		\n\t"	//Q1 = m
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//Q1 = m
 	"vld1.32 		{d22, d23}, [%0]	    \n\t"	//Q3 = m+8
 
 	"vmul.f32 		q2, q9, d0[0]			\n\t"	//q2 = q9*Q0[0]
