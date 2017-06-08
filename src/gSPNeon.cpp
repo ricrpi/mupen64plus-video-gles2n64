@@ -528,18 +528,6 @@ static void gSPLightVertexNEON(u32 v)
     OGL.triangles.vertices[v].b = result[2];
 }
 
-static void gSPBillboardVertexNEON(u32 v, u32 i)
-{
-    asm volatile (
-    "vld1.32 		{d2, d3}, [%0]			\n\t"	//q1={x0,y0, z0, w0}
-    "vld1.32 		{d4, d5}, [%1]			\n\t"	//q2={x1,y1, z1, w1}
-    "vadd.f32 		q1, q1, q2 			    \n\t"	//q1=q1+q1
-    "vst1.32 		{d2, d3}, [%0] 		    \n\t"	//
-    :: "r"(&OGL.triangles.vertices[v].x), "r"(&OGL.triangles.vertices[i].x)
-    : "d2", "d3", "d4", "d5", "memory"
-    );
-}
-
 void gSPInitNeon()
 {
 #ifdef __VEC4_OPT
@@ -550,5 +538,4 @@ void gSPInitNeon()
 #endif
     gSPTransformVertex = gSPTransformVertexNEON;
     gSPLightVertex = gSPLightVertexNEON;
-    gSPBillboardVertex = gSPBillboardVertexNEON;
 }
