@@ -1716,7 +1716,11 @@ void OGL_SwapBuffers()
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		OPENGL_CHECK_ERRORS;
-
+		
+		// if emulator defined a render callback function, call it before
+		// buffer swap
+		if (renderCallback) (*renderCallback)(true);	
+		OPENGL_CHECK_ERRORS;
 		if (CoreVideo_GL_SwapBuffers) CoreVideo_GL_SwapBuffers();
 
         glBindFramebuffer(GL_FRAMEBUFFER, OGL.framebuffer.fb);
@@ -1728,12 +1732,11 @@ void OGL_SwapBuffers()
     }
     else
     {
+		// if emulator defined a render callback function, call it before
+		// buffer swap
+		if (renderCallback) (*renderCallback)(true);
 		if (CoreVideo_GL_SwapBuffers) CoreVideo_GL_SwapBuffers();
     }
-
-    // if emulator defined a render callback function, call it before
-	// buffer swap
-    if (renderCallback) (*renderCallback)(true);
 
     OGL.screenUpdate = false;
 
