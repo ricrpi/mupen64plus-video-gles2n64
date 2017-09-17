@@ -63,10 +63,8 @@ static void gSPTransformVertex4NEON(u32 v, const float mtx[4][4])
 	"vld1.32 		{d6, d7}, [%1]	        \n\t"	//q3 = {x,y,z,w}
     "sub 		    %1, %1, %3   		  	\n\t"	//q0 = {x,y,z,w}
 
-	"vld1.32 		{d18, d19}, [%0]!		\n\t"	//q9 = m
-	"vld1.32 		{d20, d21}, [%0]!       \n\t"	//q10 = m
-	"vld1.32 		{d22, d23}, [%0]!       \n\t"	//q11 = m
-	"vld1.32 		{d24, d25}, [%0]        \n\t"	//q12 = m
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//q9 = m
+	"vld1.32 		{d22-d25}, [%0]       	\n\t"	//q11 = m
 
 	"vmov.f32 		q13, q12    			\n\t"	//q13 = q12
 	"vmov.f32 		q14, q12    			\n\t"	//q14 = q12
@@ -116,8 +114,7 @@ static void gSPTransformNormal4NEON(u32 v, float mtx[4][4])
 	"vld1.32 		{d6, d7}, [%1]	        \n\t"	//q3 = {x,y,z,w}
     "sub 		    %1, %1, %3  		  	\n\t"	//q0 = {x,y,z,w}
 
-	"vld1.32 		{d18, d19}, [%0]!		\n\t"	//q9 = m
-	"vld1.32 		{d20, d21}, [%0]!	    \n\t"	//q10 = m+16
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//q9 = m
 	"vld1.32 		{d22, d23}, [%0]    	\n\t"	//q11 = m+32
 
 	"vmul.f32 		q12, q9, d0[0]			\n\t"	//q12 = q9*d0[0]
@@ -204,8 +201,7 @@ static void gSPLightVertex4NEON(u32 v)
 	"vld1.32 		{d6, d7}, [%1]	        \n\t"	//q3 = {x,y,z,w}
     "sub 		    %1, %1, %3   		  	\n\t"	//q0 = {x,y,z,w}
 
-	"vld1.32 		{d18, d19}, [%0]!		\n\t"	//q9 = m
-	"vld1.32 		{d20, d21}, [%0]!	    \n\t"	//q10 = m+16
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//q9 = m
 	"vld1.32 		{d22, d23}, [%0]    	\n\t"	//q11 = m+32
 
 	"vmul.f32 		q12, q9, d0[0]			\n\t"	//q12 = q9*d0[0]
@@ -338,10 +334,8 @@ static void gSPLightVertex4NEON(u32 v)
     "vmin.f32 		q1, q1, q4  	        \n\t"	//
     "vmin.f32 		q2, q2, q4  	        \n\t"	//
     "vmin.f32 		q3, q3, q4  	        \n\t"	//
-    "vst1.32 		{d0, d1}, [%4]!	        \n\t"	//
-    "vst1.32 		{d2, d3}, [%4]! 	    \n\t"	//
-    "vst1.32 		{d4, d5}, [%4]!	        \n\t"	//
-    "vst1.32 		{d6, d7}, [%4]     	    \n\t"	//
+    "vst1.32 		{d0-d3}, [%4]!	        \n\t"	//
+    "vst1.32 		{d4-d7}, [%4]     	    \n\t"	//
 
     : "+&r"(tmp), "+&r"(i), "+&r"(ptr0), "+&r"(ptr1), "+&r"(ptr2)
     : "I"(sizeof(SPLight))
@@ -437,10 +431,8 @@ static void gSPTransformVertexNEON(float vtx[4], const float mtx[4][4])
 #else
 	asm volatile (
 	"vld1.32 		{d0, d1}, [%1]		  	\n\t"	//d8 = {x,y}
-	"vld1.32 		{d18, d19}, [%0]!		\n\t"	//Q1 = m
-	"vld1.32 		{d20, d21}, [%0]!   	\n\t"	//Q2 = m+4
-	"vld1.32 		{d22, d23}, [%0]!   	\n\t"	//Q3 = m+8
-	"vld1.32 		{d24, d25}, [%0]    	\n\t"	//Q4 = m+12
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//Q1 = m
+	"vld1.32 		{d22-d25}, [%0]    	\n\t"	//Q4 = m+12
 
 	"vmul.f32 		q13, q9, d0[0]			\n\t"	//Q5 = Q1*Q0[0]
 	"vmla.f32 		q13, q10, d0[1]			\n\t"	//Q5 += Q1*Q0[1]
@@ -468,8 +460,7 @@ static void gSPLightVertexNEON(u32 v)
 
 	asm volatile (
 	"vld1.32 		{d0, d1}, [%1]  		\n\t"	//Q0 = v
-	"vld1.32 		{d18, d19}, [%0]!		\n\t"	//Q1 = m
-	"vld1.32 		{d20, d21}, [%0]!	    \n\t"	//Q2 = m+4
+	"vld1.32 		{d18-d21}, [%0]!		\n\t"	//Q1 = m
 	"vld1.32 		{d22, d23}, [%0]	    \n\t"	//Q3 = m+8
 
 	"vmul.f32 		q2, q9, d0[0]			\n\t"	//q2 = q9*Q0[0]
@@ -537,18 +528,6 @@ static void gSPLightVertexNEON(u32 v)
     OGL.triangles.vertices[v].b = result[2];
 }
 
-static void gSPBillboardVertexNEON(u32 v, u32 i)
-{
-    asm volatile (
-    "vld1.32 		{d2, d3}, [%0]			\n\t"	//q1={x0,y0, z0, w0}
-    "vld1.32 		{d4, d5}, [%1]			\n\t"	//q2={x1,y1, z1, w1}
-    "vadd.f32 		q1, q1, q2 			    \n\t"	//q1=q1+q1
-    "vst1.32 		{d2, d3}, [%0] 		    \n\t"	//
-    :: "r"(&OGL.triangles.vertices[v].x), "r"(&OGL.triangles.vertices[i].x)
-    : "d2", "d3", "d4", "d5", "memory"
-    );
-}
-
 void gSPInitNeon()
 {
 #ifdef __VEC4_OPT
@@ -559,5 +538,4 @@ void gSPInitNeon()
 #endif
     gSPTransformVertex = gSPTransformVertexNEON;
     gSPLightVertex = gSPLightVertexNEON;
-    gSPBillboardVertex = gSPBillboardVertexNEON;
 }

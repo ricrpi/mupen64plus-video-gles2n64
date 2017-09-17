@@ -116,7 +116,6 @@ ifneq ("$(filter arm%,$(HOST_CPU))","")
       CFLAGS += -D__VFP_OPT
     endif
     ifeq ($(NEON), 1)
-      CFLAGS += -DARM_ASM
       CFLAGS += -D__NEON_OPT
       ifeq ("$(filter -mfpu=neon%,$(OPTFLAGS))","")
     	CFLAGS += -mfpu=neon
@@ -131,10 +130,10 @@ ifeq ("$(CPU)","NONE")
 endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
-OPTFLAGS ?= 
+OPTFLAGS ?= -O3 -flto
 WARNFLAGS ?= -Wall
 CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0     
-CXXFLAGS += -fvisibility-inlines-hidden -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0    
+CXXFLAGS += $(OPTFLAGS) -fvisibility-inlines-hidden -DSDL_VIDEO_OPENGL_ES2=1 -DSDL_VIDEO_OPENGL=0    
 LDFLAGS += $(SHARED)
 
 ifeq ($(CRC_OPT), 1)
