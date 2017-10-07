@@ -158,15 +158,17 @@ endif
 
 ifeq ($(VC), 1)
   GL_CFLAGS += -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
-  GL_LDLIBS += -L/opt/vc/lib -lEGL -lbcm_host -lvcos -lvchiq_arm
+  GL_LDLIBS += -L/opt/vc/lib -lbrcmEGL -lbcm_host -lvcos -lvchiq_arm
   CFLAGS += -DARM -DVC
   CXXFLAGS += -DVC -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux
   LDLIBS += -lm
   USE_GLES=1
+  GLES_LIB := -lbrcmGLESv2
 endif
 
 ifeq ($(USE_GLES), 1)
-  GL_LDLIBS += -lGLESv2
+  GLES_LIB ?= -lGLESv2
+  GL_LDLIBS += $(GLES_LIB)
 endif
 
 ifeq ($(CPU), X86)
