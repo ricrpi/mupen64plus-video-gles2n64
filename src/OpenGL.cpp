@@ -361,33 +361,6 @@ bool OGL_CoreVideo_Start()
     LOG(LOG_MINIMAL, "Initializing core video subsystem...\n" );
     CoreVideo_Init();
     
-    /* hard-coded attribute values */
-    const int iDOUBLEBUFFER = 1;
-
-    /* set opengl attributes */
-    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
-    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, config.verticalSync);
-    
-    /* use 16Bit RGB 565 color depth */
-    CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, 16);
-    CoreVideo_GL_SetAttribute(M64P_GL_RED_SIZE, 5);
-    CoreVideo_GL_SetAttribute(M64P_GL_GREEN_SIZE, 6);
-    CoreVideo_GL_SetAttribute(M64P_GL_BLUE_SIZE, 5);
-    
-    /* enable multisampling antialisasing */
-    if (config.multiSampling > 0)
-    {
-        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
-        if (config.multiSampling <= 2)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
-        else if (config.multiSampling <= 4)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
-        else if (config.multiSampling <= 8)
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
-        else
-            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
-    }
-    
     int current_w = config.window.width;
     int current_h = config.window.height;
 	
@@ -415,6 +388,33 @@ bool OGL_CoreVideo_Start()
 	return false;
     }
 
+    /* hard-coded attribute values */
+    const int iDOUBLEBUFFER = 1;
+
+    /* set opengl attributes */
+    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
+    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, config.verticalSync);
+    
+    /* use 16Bit RGB 565 color depth */
+    CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, 16);
+    CoreVideo_GL_SetAttribute(M64P_GL_RED_SIZE, 5);
+    CoreVideo_GL_SetAttribute(M64P_GL_GREEN_SIZE, 6);
+    CoreVideo_GL_SetAttribute(M64P_GL_BLUE_SIZE, 5);
+    
+    /* enable multisampling antialisasing */
+    if (config.multiSampling > 0)
+    {
+        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
+        if (config.multiSampling <= 2)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
+        else if (config.multiSampling <= 4)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
+        else if (config.multiSampling <= 8)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
+        else
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
+    }
+	
     const unsigned char* m_pRenderStr = glGetString(GL_RENDERER);
     const unsigned char* m_pVersionStr = glGetString(GL_VERSION);
     const unsigned char* m_pVendorStr = glGetString(GL_VENDOR);
