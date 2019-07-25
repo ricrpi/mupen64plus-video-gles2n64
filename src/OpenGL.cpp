@@ -409,7 +409,7 @@ bool OGL_CoreVideo_Start()
 	
 	/* Set the video mode */
     LOG(LOG_MINIMAL, "Setting video mode %dx%d...\n", current_w, current_h );
-    if (CoreVideo_SetVideoMode(current_w, current_h, 32, M64VIDEO_FULLSCREEN, flags) != M64ERR_SUCCESS)
+    if (CoreVideo_SetVideoMode(current_w, current_h, 32, config.video.fullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags) != M64ERR_SUCCESS)
     {
 	printf("ERROR: Failed to set %i-bit video mode: %ix%i\n", 32, config.window.width, config.window.height);
 	return false;

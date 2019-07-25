@@ -24,6 +24,7 @@ struct Config
     struct
     {
         int force, width, height;
+        int fullscreen;
     } video;
 
     struct
