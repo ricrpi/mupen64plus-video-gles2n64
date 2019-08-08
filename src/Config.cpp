@@ -37,6 +37,9 @@
 
 Config config;
 
+m64p_handle g_configVideoGeneral = nullptr;
+m64p_handle g_configVideoGliden64 = nullptr;
+
 struct Option
 {
     const char* name;
@@ -321,6 +324,16 @@ void Config_LoadConfig()
 
 		fclose(f);
 	}
-	
+
+    // load mupen64plus config
+    if (ConfigOpenSection("Video-General", &g_configVideoGeneral) != M64ERR_SUCCESS) {
+        LOG(LOG_ERROR, "Unable to open Video-General configuration section");
+        g_configVideoGeneral = nullptr;
+    }
+
+    if (g_configVideoGeneral != nullptr)
+    {
+        config.video.fullscreen = ConfigGetParamBool(g_configVideoGeneral, "Fullscreen");
+    }
 }
 
